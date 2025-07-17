@@ -1,0 +1,4 @@
+*.swp
+graphs/*
+data/*
+mem-graph.png
