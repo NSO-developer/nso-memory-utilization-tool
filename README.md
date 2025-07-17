@@ -1,4 +1,4 @@
-# NSO Memory Utilization Measurment Tool
+# NSO Memory Utilization Measurement Tool
 This is a tool to plot live RSS(Physical Memory Utilization) and Memory Allocated for JavaVM, PythonVMs and NSO Core for NSO. The purpose of this tool is to gain a higher level overview on how memory usage developed during various of incident. Eventually help out Customer to understand what is actually happend in their enviorment, CX on troubleshooting and BU on understanding and fix the problem. 
 
 ## Dependency
