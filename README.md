@@ -17,6 +17,8 @@ sh plot.sh <Time Consumption>
 ## Data Collection Source
 * The Memory Allocated is taking the value in "writeable/private" from pmap command.(Suggestion from Magnus Thoang from Architect Support Team). This gives us the actually allocated memory for each process without shared memory. 
 * The Physical Memory Used is from "VmRSS" in "/proc/$pid/status"
+* "CommitLimit" from "/proc/meminfo" as memory allocation limit. 
+* "Committed_AS" from "/proc/meminfo" for global allocated memory across the system. 
 
 
 ## Example Usage
