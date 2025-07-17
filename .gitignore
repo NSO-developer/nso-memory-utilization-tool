@@ -1,4 +1,7 @@
 *.swp
 graphs/*
+!graphs/.gitkeep
 data/*
+!data/.gitkeep
+
 mem-graph.png
