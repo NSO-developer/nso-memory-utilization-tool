@@ -26,7 +26,7 @@ sh plot.sh <Time Consumption>
 ## Diagram Generated
 All the diagram generated have a red warning line to indicate where is the CommitLimit except per VM PythonVM measurment. 
 * Allocated Memory per Process vs Total Allocated Memory(Commited_AS) vs Physical Memory Usage(RSS)
-    * ncs.smp
+    * NSO Core(ncs.smp)
     * JavaVM
     * PythonVM
         * per VM (Without CommitLimit Warning Line to increase visiblity)
