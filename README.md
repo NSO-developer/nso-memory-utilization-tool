@@ -23,6 +23,18 @@ sh plot.sh <Time Consumption>
 * "Committed_AS" from "/proc/meminfo" for global allocated memory across the system. 
 
 
+## Diagram Generated
+All the diagram generated have a red warning line to indicate where is the CommitLimit except per VM PythonVM measurment. 
+* Allocated Memory per Process vs Total Allocated Memory(Commited_AS) vs Physical Memory Usage(RSS)
+    * ncs.smp
+    * JavaVM
+    * PythonVM
+        * per VM (Without CommitLimit Warning Line to increase visiblity)
+        * Total for all the VMs
+* Comparision between ncs.smp, JavaVM and PythonVM
+    * Allocated Memory per Process vs Total Allocated Memory(Commited_AS) 
+    * Total Allocated Memory(Commited_AS) vs Physical Memory Usage(RSS)
+
 ## Example Usage
 Customer has configured the following settings to only allow 50 percent of total memory to get allocated in the system. 
 ```
@@ -36,6 +48,9 @@ While NSO require much more than that during the startup. In the diagram below w
 
 The memory consumption diagram from ncs.smp shows the allocated memory has not significant spike during the time allocated memory spiked. This can show the issue is because some other process. For example a cron process lunched something exactly at that time. 
 
+## Problems and Bugs?
+Feels free to open issues or comment on the blog post.  
+Pull Request are welcome if one wants to contribute. 
 
 ## Copyright and License Notice
 ```

@@ -11,4 +11,8 @@ echo "Collection for for all process done"
 bash graphs.sh ncs.smp
 bash graphs.sh NcsJVMLauncher
 bash graphs.sh python
+
+bash graphs_compare.sh
+
+
 echo "Ploting graph for all process done"

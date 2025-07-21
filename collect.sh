@@ -32,7 +32,6 @@ if [ $PY_CHECK -eq 0 ]; then
   PID=$(echo $PID  | awk -F' ' '{print $1}')
 fi
 
-
 for (( i=0;i<=$2;i++ ))
 do
   #echo $i" second is collected"
@@ -48,6 +47,8 @@ do
   SUM_PHY=0
   ALO_PID=0
   PHY=0
+  TIME=$(date +%T)
+
   for pid in $PID ; do
     if [ $PY_CHECK -eq 1 ]; then
       name=$(ps -p $pid -o command | awk -F' ' '{print $9}')
@@ -57,7 +58,6 @@ do
     name=$(echo $name)
 
     # ps -p $PID -o pid=,%mem=,rss= >> /tmp/mem.log
-    TIME=$(date +%T)
     ALO_PID=$(pmap -d $pid | grep "writeable/private" | awk -F' ' '{print $4}' | egrep -o '[0-9.]+'  ) 
     PHY=$(cat /proc/$pid/status | grep VmRSS | awk -F' ' '{print $2}')
     echo $i" second is collected towards data/mem_"$name".log"
