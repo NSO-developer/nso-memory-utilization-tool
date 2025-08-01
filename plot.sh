@@ -10,7 +10,7 @@ echo "Collection for for all process done"
 
 bash graphs.sh ncs.smp
 bash graphs.sh NcsJVMLauncher
-bash graphs.sh python
+bash graphs.sh python3
 
 bash graphs_compare.sh
 
