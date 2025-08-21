@@ -19,5 +19,6 @@ set format x '%H:%M:%S'
 #set xrange ['00:00':'24:00']
 
 
-plot "data/mem.log" using 1:2 with lines axes x1y1 title "RSS" , \
+plot "data/ref.log" using 1:2 with lines axes x1y1 title "RSS" , \
+     "data/mem.log" using 1:2 with lines axes x1y1 title "RSS" , \
      "data/mem.log" using 1:3 with lines axes x1y1 title "Allocated"

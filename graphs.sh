@@ -3,8 +3,6 @@
 
 
 
-PID=$(pgrep -f $1)
-echo "Monitoring PID: "$PID
 
 PY_CHECK=0
 
@@ -27,36 +25,33 @@ mkdir graphs/$1
 
 
 
-if [ $PY_CHECK -eq 0 ]; then
-  PID=$(echo $PID  | awk -F' ' '{print $1}')
-fi
-
-
-for pid in $PID ; do
+for filename in data/$1/*.log; do
   if [ $PY_CHECK -eq 1 ]; then
-    name=$(ps -p $pid -o command | awk -F' ' '{print $9}')
+     name=$(echo $filename | awk -F'_' '{print $2}'| awk -F'.' '{print $1}')
   else
     name=$1
   fi
   name=$(echo $name)
-  echo "generated graph for pid "$name
-  rm data/mem.log
-  ln -s $PWD/data/mem_$name.log $PWD/data/mem.log
+  rm -f data/mem.log
+  if [ ! -z "${name}" ]; then
+    echo "generated graph for pid "$name
+    ln -s $PWD/data/$1/mem_$name.log $PWD/data/mem.log
+    if [ $PY_CHECK -eq 1 ]; then
+       gnuplot show_mem_2.plt
+    else
+       gnuplot show_mem.plt
+    fi
 
-  if [ $PY_CHECK -eq 1 ]; then
-     gnuplot show_mem_2.plt
-  else
-     gnuplot show_mem.plt
+    cp mem-graph.png graphs/$1/mem_$name.png
   fi
-  cp mem-graph.png graphs/$1/mem_$name.png
 done
 
 
 if [ $PY_CHECK -eq 1 ]; then
   name="total"
   echo "generated graph for total "$name
-  rm data/mem.log
-  ln -s $PWD/data/mem_$name.log $PWD/data/mem.log
+  rm -f data/mem.log
+  ln -s $PWD/data/$1/mem_$name.log $PWD/data/mem.log
   gnuplot show_mem.plt
   cp mem-graph.png graphs/$1/mem_$name.png
 fi
