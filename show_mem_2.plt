@@ -1,3 +1,14 @@
+if (GPVAL_VERSION >= 5.0) set for [i=1:8] linetype i dashtype i
+if (GPVAL_VERSION < 5.0) set termoption dashed
+
+
+print "Statistical Data for RSS"
+stats 'data/mem.log' using 2
+
+print "Statistical Data for Allocated"
+stats 'data/mem.log' using 3
+
+
 set term png small size 800,600
 set output "mem-graph.png"
 
@@ -17,7 +28,6 @@ set xdata time
 set timefmt '%H:%M:%S'
 set format x '%H:%M:%S'
 #set xrange ['00:00':'24:00']
-
 
 plot "data/mem.log" using 1:2 with lines axes x1y1 title "RSS" , \
      "data/mem.log" using 1:3 with lines axes x1y1 title "Allocated"
