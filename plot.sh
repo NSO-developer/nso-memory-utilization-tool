@@ -9,8 +9,10 @@ echo "\n\n"
 
 
 bash graphs.sh ncs.smp
+echo "\n"
 bash graphs.sh NcsJVMLauncher
+echo "\n"
 bash graphs.sh python3
-
+echo "\n"
 bash graphs_compare.sh
 echo "===================================== Ploting graph for all process done  ================================================="

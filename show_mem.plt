@@ -1,14 +1,24 @@
 if (GPVAL_VERSION >= 5.0) set for [i=1:8] linetype i dashtype i
 if (GPVAL_VERSION < 5.0) set termoption dashed
 
+print "Statistical Data for Commited_AS"
+stats 'data/mem.log' using 4
+print "Recommended CommitLimit: ",STATS_max
+print "Please add some buffer range based on the Recommended CommitLimit"
+
+print "Statistical Data for RSS"
+stats 'data/mem.log' using 2
+
+print "Statistical Data for Allocated"
+stats 'data/mem.log' using 3
+
+
+
 set term png small size 800,600
 set output "mem-graph.png"
 
 set ylabel "MEM(kb)"
 set xlabel "Time"
-
-#set y2label "%MEM"
-#set y2label "%Commited_AS"
 
 set ytics nomirror 
 #set y2tics nomirror in
@@ -23,6 +33,9 @@ set format x '%H:%M:%S'
 
 
 show style line
+
+#set y2label "%MEM"
+#set y2label "%Commited_AS"
 
 
 

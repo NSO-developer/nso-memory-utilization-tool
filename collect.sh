@@ -33,7 +33,9 @@ for (( i=0;i<=$2;i++ ))
 do
   #echo $i" second is collected"
   PID=$(pgrep -f $1)
-
+  #PYfiles=$(ls data/python3)
+  #UPDATEfiles=$(ps -o command -p $data | awk -F' ' '{print $9}')
+  #Diff=$(comm <(echo $PYfiles) <(echo $UPDATEfiles))
   #if [ $PY_CHECK -eq 0 ]; then
   #  PID=$(echo $PID  | awk -F' ' '{print $1}')
   #fi
