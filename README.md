@@ -35,6 +35,39 @@ All the diagram generated have a red warning line to indicate where is the Commi
     * Allocated Memory per Process vs Total Allocated Memory(Commited_AS) 
     * Total Allocated Memory(Commited_AS) vs Physical Memory Usage(RSS)
 
+## Recommended CommitLimit
+vm.overcommit_ratio can be calculated with the following formular
+```
+100(CommitLimit - SWAP) / (total_RAM - total_huge_TLB) = vm.overcommit_ratio
+```
+After data collection, the code will list the maximum Commited_AS + Buffer and recommend that as CommitLimit
+
+```
+* COLUMN: 
+  Mean:          1.59283e+07
+  Std Dev:          926.0038
+  Sample StdDev:   1069.2571
+  Skewness:           0.3991
+  Kurtosis:           1.5237
+  Avg Dev:          855.0000
+  Sum:           6.37133e+07
+  Sum Sq.:       1.01485e+15
+
+  Mean Err.:        463.0019
+  Std Dev Err.:     327.3918
+  Skewness Err.:      1.2247
+  Kurtosis Err.:      2.4495
+
+  Minimum:       1.59274e+07 [2]
+  Maximum:       1.59297e+07 [0]
+  Quartile:      1.59275e+07 
+  Median:        1.59281e+07 
+  Quartile:      1.59292e+07 
+
+Recommended CommitLimit: 15929672.0
+Please add some buffer range based on the Recommended CommitLimit
+```
+
 ## Example Usage
 Customer has configured the following settings to only allow 50 percent of total memory to get allocated in the system. 
 ```
