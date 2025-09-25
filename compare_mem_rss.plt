@@ -1,6 +1,21 @@
 if (GPVAL_VERSION >= 5.0) set for [i=1:8] linetype i dashtype i
 if (GPVAL_VERSION < 5.0) set termoption dashed
 
+print "Statistical Data for Memory Consumption on JavaVM Used"
+stats 'data/NcsJVMLauncher/mem_NcsJVMLauncher.log' using 2
+
+print "Statistical Data for Memory Consumption on PythonVM(Total) Used"
+stats 'data/python3/mem_total.log' using 2
+
+print "Statistical Data for Physical Memory Consumption on ncs.smp Used"
+stats 'data/ncs.smp/mem_ncs.smp.log' using 2
+
+print "Statistical Data for Commited_AS"
+stats 'data/python3/mem_total.log' using 4
+print "Recommended CommitLimit: ",STATS_max
+print "Please add some buffer range based on the Recommended CommitLimit"
+
+
 set term png small size 800,600
 set output "graphs/compare/mem-graph-compare-rss.png"
 

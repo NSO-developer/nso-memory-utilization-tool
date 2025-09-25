@@ -1,6 +1,20 @@
 if (GPVAL_VERSION >= 5.0) set for [i=1:8] linetype i dashtype i
 if (GPVAL_VERSION < 5.0) set termoption dashed
 
+print "Statistical Data for Memory Allocation on JavaVM "
+stats 'data/NcsJVMLauncher/mem_NcsJVMLauncher.log' using 3
+
+print "Statistical Data for Memory Allocation on PythonVM(Total)"
+stats 'data/python3/mem_total.log' using 3
+
+print "Statistical Data for Memory Allocation on ncs.smp"
+stats 'data/ncs.smp/mem_ncs.smp.log' using 3
+
+print "Statistical Data for Commited_AS"
+stats 'data/python3/mem_total.log' using 4
+print "Recommended CommitLimit: ",STATS_max
+print "Please add some buffer range based on the Recommended CommitLimit"
+
 set term png small size 800,600
 set output "graphs/compare/mem-graph-compare-allocate.png"
 
@@ -23,8 +37,6 @@ set format x '%H:%M:%S'
 
 
 show style line
-
-
 
 plot "data/python3/mem_total.log" using 1:5 with lines axes x1y1 lc 'red' lw 2 title "CommitLimit", \
      "data/python3/mem_total.log" using 1:4 with lines axes x1y1 title "Commited_AS", \
