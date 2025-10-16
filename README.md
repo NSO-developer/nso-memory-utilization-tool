@@ -12,7 +12,7 @@ apt-get install gnuplot
 ## Usage
 Start measurment and input measurment time period. The diagram will generated afterwards in the graphs folder per process after the data collection
 ```
-sh plot.sh <Time Consumption>
+sh plot.sh <Time Duration>
 ```
 
 
