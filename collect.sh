@@ -2,16 +2,31 @@
 
 NS=1000000000
 
-rm -rf data/$1
-mkdir data/$1
+PROCESS=$1
+DURATION=$2
+VERBOSE=${3:-0}
+
+if [ -z "$PROCESS" ] || [ -z "$DURATION" ]; then
+  echo "Usage: $0 <process_name> <duration> [verbose_flag]"
+  exit 1
+fi
+
+log_verbose() {
+  if [ $VERBOSE -eq 1 ]; then
+    echo "$1"
+  fi
+}
+
+rm -rf data/$PROCESS
+mkdir data/$PROCESS
 
 PY_CHECK=0
 
-case "$1" in
-     "python3") 
+case "$PROCESS" in
+     "python3")
         PY_CHECK=1
         ;;
-     "python") 
+     "python")
         PY_CHECK=1
         ;;
      *)
@@ -20,7 +35,7 @@ case "$1" in
     esac
 
 NCS_CHECK=0
-case "$1" in
+case "$PROCESS" in
      "ncs.smp")
         NCS_CHECK=1
         ;;
@@ -30,11 +45,11 @@ case "$1" in
     esac
 
 
-for (( i=0;i<=$2;i++ ))
+for (( i=0;i<=$DURATION;i++ ))
 do
   START_TIME=$(date +%s%N)
   #echo $i" second is collected"
-  PID=$(pgrep -f $1)
+  PID=$(pgrep -f $PROCESS)
   #PYfiles=$(ls data/python3)
   #UPDATEfiles=$(ps -o command -p $data | awk -F' ' '{print $9}')
   #Diff=$(comm <(echo $PYfiles) <(echo $UPDATEfiles))
@@ -59,14 +74,14 @@ do
       name=$(ps -p $pid -o command | awk -F' ' '{print $9}')
       com=name
     else
-      name=$1
+      name=$PROCESS
       com=$(ps -p $pid -o command | awk -F' ' '{print $5}')
       #echo $pid" "$name "  " $com " "$(ps -p $pid -o command)
     fi
     if [ ! -z "${name}" ] && [ ! -z "${com}" ]  ; then
       name=$(echo $name)
-      echo "Monitoring PID: "$pid $name
-      ALO_PID=$(pmap -d $pid | grep "writeable/private" | awk -F' ' '{print $4}' | egrep -o '[0-9.]+'  ) 
+      log_verbose "Monitoring PID: $pid $name"
+      ALO_PID=$(pmap -d $pid | grep "writeable/private" | awk -F' ' '{print $4}' | egrep -o '[0-9.]+'  )
       PHY=$(cat /proc/$pid/status | grep VmRSS | awk -F' ' '{print $2}')
 
       if [ $PY_CHECK -eq 1 ] ||  [ $NCS_CHECK -eq 1 ] ; then
@@ -80,23 +95,23 @@ do
      if [ $counter -gt 1 ] ; then
         if [ ! -z "${name}" ]  && [ ! -z "${com}" ]   ; then
           if  [ $NCS_CHECK -eq 1 ] ; then
-            echo $TIME" "$SUM_PHY" "$SUM_ALO_PID" "$ALO_TOTAL" "$Limit  >> "data/"$1"/mem_"$name".log"
-            echo $i" second is collected towards data/"$1"/mem_"$name".log"
+            echo $TIME" "$SUM_PHY" "$SUM_ALO_PID" "$ALO_TOTAL" "$Limit  >> "data/"$PROCESS"/mem_"$name".log"
+            log_verbose "$i second is collected towards data/$PROCESS/mem_$name.log"
           else
-            echo $TIME" "$PHY" "$ALO_PID" "$ALO_TOTAL" "$Limit  >> "data/"$1"/mem_"$name".log"
-            echo $i" second is collected towards data/"$1"/mem_"$name".log"
+            echo $TIME" "$PHY" "$ALO_PID" "$ALO_TOTAL" "$Limit  >> "data/"$PROCESS"/mem_"$name".log"
+            log_verbose "$i second is collected towards data/$PROCESS/mem_$name.log"
           fi
         fi
      else
         if [ ! -z "${name}" ]  ; then
-          echo $TIME" "$PHY" "$ALO_PID" "$ALO_TOTAL" "$Limit  >> "data/"$1"/mem_"$name".log"
-          echo $i" second is collected towards data/"$1"/mem_"$name".log"
+          echo $TIME" "$PHY" "$ALO_PID" "$ALO_TOTAL" "$Limit  >> "data/"$PROCESS"/mem_"$name".log"
+          log_verbose "$i second is collected towards data/$PROCESS/mem_$name.log"
         fi
      fi
-   done   
+   done
 
   if [ $PY_CHECK -eq 1 ]; then
-    echo $TIME" "$SUM_PHY" "$SUM_ALO_PID" "$ALO_TOTAL" "$Limit  >> "data/"$1"/mem_total.log"  
+    echo $TIME" "$SUM_PHY" "$SUM_ALO_PID" "$ALO_TOTAL" "$Limit  >> "data/"$PROCESS"/mem_total.log"
   fi
 
   #echo $TIME" 0 0 0 0"  >> "data/ref.log"
@@ -111,4 +126,4 @@ do
   fi
 done
 
-echo "Collection for "$1" done"
+echo "Collection for $PROCESS done"

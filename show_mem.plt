@@ -1,16 +1,30 @@
 if (GPVAL_VERSION >= 5.0) set for [i=1:8] linetype i dashtype i
 if (GPVAL_VERSION < 5.0) set termoption dashed
 
-print "Statistical Data for Commited_AS"
-stats 'data/mem.log' using 4
+if (!exists("verbose")) verbose = 0
+
+if (verbose == 1) {
+    print "Statistical Data for Commited_AS"
+    stats 'data/mem.log' using 4
+} else {
+    stats 'data/mem.log' using 4 nooutput
+}
 print "Recommended CommitLimit: ",STATS_max
 print "Please add some buffer range based on the Recommended CommitLimit"
 
-print "Statistical Data for RSS"
-stats 'data/mem.log' using 2
+if (verbose == 1) {
+    print "Statistical Data for RSS"
+    stats 'data/mem.log' using 2
+} else {
+    stats 'data/mem.log' using 2 nooutput
+}
 
-print "Statistical Data for Allocated"
-stats 'data/mem.log' using 3
+if (verbose == 1) {
+    print "Statistical Data for Allocated"
+    stats 'data/mem.log' using 3
+} else {
+    stats 'data/mem.log' using 3 nooutput
+}
 
 
 

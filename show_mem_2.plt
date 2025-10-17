@@ -1,12 +1,21 @@
 if (GPVAL_VERSION >= 5.0) set for [i=1:8] linetype i dashtype i
 if (GPVAL_VERSION < 5.0) set termoption dashed
 
+if (!exists("verbose")) verbose = 0
 
-print "Statistical Data for RSS"
-stats 'data/mem.log' using 2
+if (verbose == 1) {
+    print "Statistical Data for RSS"
+    stats 'data/mem.log' using 2
+} else {
+    stats 'data/mem.log' using 2 nooutput
+}
 
-print "Statistical Data for Allocated"
-stats 'data/mem.log' using 3
+if (verbose == 1) {
+    print "Statistical Data for Allocated"
+    stats 'data/mem.log' using 3
+} else {
+    stats 'data/mem.log' using 3 nooutput
+}
 
 
 set term png small size 800,600

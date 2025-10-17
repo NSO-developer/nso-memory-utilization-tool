@@ -12,7 +12,7 @@ apt-get install gnuplot
 ## Usage
 Start measurment and input measurment time period. The diagram will generated afterwards in the graphs folder per process after the data collection
 ```
-sh plot.sh <Time Duration>
+sh plot.sh [--verbose|-v] <Time Duration>
 ```
 
 
@@ -102,4 +102,3 @@ writing, software distributed under the License is distributed on an "AS
 IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
 or implied.
 ```
-

@@ -1,17 +1,35 @@
 if (GPVAL_VERSION >= 5.0) set for [i=1:8] linetype i dashtype i
 if (GPVAL_VERSION < 5.0) set termoption dashed
 
-print "Statistical Data for Memory Allocation on JavaVM "
-stats 'data/NcsJVMLauncher/mem_NcsJVMLauncher.log' using 3
+if (!exists("verbose")) verbose = 0
 
-print "Statistical Data for Memory Allocation on PythonVM(Total)"
-stats 'data/python3/mem_total.log' using 3
+if (verbose == 1) {
+    print "Statistical Data for Memory Allocation on JavaVM "
+    stats 'data/NcsJVMLauncher/mem_NcsJVMLauncher.log' using 3
+} else {
+    stats 'data/NcsJVMLauncher/mem_NcsJVMLauncher.log' using 3 nooutput
+}
 
-print "Statistical Data for Memory Allocation on ncs.smp"
-stats 'data/ncs.smp/mem_ncs.smp.log' using 3
+if (verbose == 1) {
+    print "Statistical Data for Memory Allocation on PythonVM(Total)"
+    stats 'data/python3/mem_total.log' using 3
+} else {
+    stats 'data/python3/mem_total.log' using 3 nooutput
+}
 
-print "Statistical Data for Commited_AS"
-stats 'data/python3/mem_total.log' using 4
+if (verbose == 1) {
+    print "Statistical Data for Memory Allocation on ncs.smp"
+    stats 'data/ncs.smp/mem_ncs.smp.log' using 3
+} else {
+    stats 'data/ncs.smp/mem_ncs.smp.log' using 3 nooutput
+}
+
+if (verbose == 1) {
+    print "Statistical Data for Commited_AS"
+    stats 'data/python3/mem_total.log' using 4
+} else {
+    stats 'data/python3/mem_total.log' using 4 nooutput
+}
 print "Recommended CommitLimit: ",STATS_max
 print "Please add some buffer range based on the Recommended CommitLimit"
 
