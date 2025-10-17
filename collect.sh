@@ -1,5 +1,6 @@
 #!/bin/bash
 
+NS=1000000000
 
 rm -rf data/$1
 mkdir data/$1
@@ -31,6 +32,7 @@ case "$1" in
 
 for (( i=0;i<=$2;i++ ))
 do
+  START_TIME=$(date +%s%N)
   #echo $i" second is collected"
   PID=$(pgrep -f $1)
   #PYfiles=$(ls data/python3)
@@ -98,8 +100,15 @@ do
   fi
 
   #echo $TIME" 0 0 0 0"  >> "data/ref.log"
-  
-  sleep 1
+
+  END_TIME=$(date +%s%N)
+  ELAPSED=$(($END_TIME - $START_TIME))
+  SLEEP_TIME=$(($NS - $ELAPSED))
+
+  if (( SLEEP_TIME > 0 )); then
+    SLEEP_SECONDS=$(awk "BEGIN {printf \"%.9f\", $SLEEP_TIME/$NS}")
+    sleep $SLEEP_SECONDS
+  fi
 done
 
 echo "Collection for "$1" done"
