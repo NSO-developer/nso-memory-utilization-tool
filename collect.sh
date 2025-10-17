@@ -2,12 +2,14 @@
 
 NS=1000000000
 
-PROCESS=$1
-DURATION=$2
-VERBOSE=${3:-0}
+PID=$1
+OUTPUT_FILE=$2
+DURATION=$3
+VERBOSE=${4:-0}
+SIGNAL_FILE=$5
 
-if [ -z "$PROCESS" ] || [ -z "$DURATION" ]; then
-  echo "Usage: $0 <process_name> <duration> [verbose_flag]"
+if [ -z "$PID" ] || [ -z "$OUTPUT_FILE" ] || [ -z "$DURATION" ]; then
+  echo "Usage: $0 <pid> <output_file> <duration> [verbose_flag] [signal_file]"
   exit 1
 fi
 
@@ -17,104 +19,38 @@ log_verbose() {
   fi
 }
 
-rm -rf data/$PROCESS
-mkdir data/$PROCESS
+OUTPUT_DIR=$(dirname "$OUTPUT_FILE")
+mkdir -p "$OUTPUT_DIR"
 
-PY_CHECK=0
 
-case "$PROCESS" in
-     "python3")
-        PY_CHECK=1
-        ;;
-     "python")
-        PY_CHECK=1
-        ;;
-     *)
-        PY_CHECK=0
-        ;;
-    esac
+# Wait for all collection processes to be ready before starting
+if [ ! -z "$SIGNAL_FILE" ]; then
+  log_verbose "Waiting for start signal..."
 
-NCS_CHECK=0
-case "$PROCESS" in
-     "ncs.smp")
-        NCS_CHECK=1
-        ;;
-     *)
-        NCS_CHECK=0
-        ;;
-    esac
+  while [ ! -f "$SIGNAL_FILE" ]; do
+    sleep 0.1
+  done
 
+  log_verbose "Start signal received. Beginning data collection for PID $PID..."
+fi
 
 for (( i=0;i<=$DURATION;i++ ))
 do
   START_TIME=$(date +%s%N)
-  #echo $i" second is collected"
-  PID=$(pgrep -f $PROCESS)
-  #PYfiles=$(ls data/python3)
-  #UPDATEfiles=$(ps -o command -p $data | awk -F' ' '{print $9}')
-  #Diff=$(comm <(echo $PYfiles) <(echo $UPDATEfiles))
-  #if [ $PY_CHECK -eq 0 ]; then
-  #  PID=$(echo $PID  | awk -F' ' '{print $1}')
-  #fi
 
   ALO_TOTAL=$(cat /proc/meminfo | grep 'Committed_AS' | awk -F' ' '{print $2}')
   Limit=$(cat /proc/meminfo | grep 'CommitLimit' | awk -F' ' '{print $2}')
 
-  SUM_ALO_PID=0
-  SUM_PHY=0
-  ALO_PID=0
-  PHY=0
   TIME=$(date +%T)
-  counter=$(wc -w <<< "$PID")
 
-  for pid in $PID ; do
-    name=""
-    com=""
-    if [ $PY_CHECK -eq 1 ]; then
-      name=$(ps -p $pid -o command | awk -F' ' '{print $9}')
-      com=name
-    else
-      name=$PROCESS
-      com=$(ps -p $pid -o command | awk -F' ' '{print $5}')
-      #echo $pid" "$name "  " $com " "$(ps -p $pid -o command)
-    fi
-    if [ ! -z "${name}" ] && [ ! -z "${com}" ]  ; then
-      name=$(echo $name)
-      log_verbose "Monitoring PID: $pid $name"
-      ALO_PID=$(pmap -d $pid | grep "writeable/private" | awk -F' ' '{print $4}' | egrep -o '[0-9.]+'  )
-      PHY=$(cat /proc/$pid/status | grep VmRSS | awk -F' ' '{print $2}')
+  log_verbose "Monitoring PID: $PID"
+  ALO_PID=$(pmap -d $PID | grep "writeable/private" | awk -F' ' '{print $4}' | egrep -o '[0-9.]+'  )
+  PHY=$(cat /proc/$PID/status | grep VmRSS | awk -F' ' '{print $2}')
 
-      if [ $PY_CHECK -eq 1 ] ||  [ $NCS_CHECK -eq 1 ] ; then
-          re='^[0-9]+$'
-          if [[ $ALO_PID =~ $re && $PHY =~ $re ]] ; then
-            SUM_ALO_PID=$(($SUM_ALO_PID+$ALO_PID))
-            SUM_PHY=$(($SUM_PHY+$PHY))
-          fi
-      fi
-    fi
-     if [ $counter -gt 1 ] ; then
-        if [ ! -z "${name}" ]  && [ ! -z "${com}" ]   ; then
-          if  [ $NCS_CHECK -eq 1 ] ; then
-            echo $TIME" "$SUM_PHY" "$SUM_ALO_PID" "$ALO_TOTAL" "$Limit  >> "data/"$PROCESS"/mem_"$name".log"
-            log_verbose "$i second is collected towards data/$PROCESS/mem_$name.log"
-          else
-            echo $TIME" "$PHY" "$ALO_PID" "$ALO_TOTAL" "$Limit  >> "data/"$PROCESS"/mem_"$name".log"
-            log_verbose "$i second is collected towards data/$PROCESS/mem_$name.log"
-          fi
-        fi
-     else
-        if [ ! -z "${name}" ]  ; then
-          echo $TIME" "$PHY" "$ALO_PID" "$ALO_TOTAL" "$Limit  >> "data/"$PROCESS"/mem_"$name".log"
-          log_verbose "$i second is collected towards data/$PROCESS/mem_$name.log"
-        fi
-     fi
-   done
-
-  if [ $PY_CHECK -eq 1 ]; then
-    echo $TIME" "$SUM_PHY" "$SUM_ALO_PID" "$ALO_TOTAL" "$Limit  >> "data/"$PROCESS"/mem_total.log"
+  if [ ! -z "$ALO_PID" ] && [ ! -z "$PHY" ]; then
+    echo $TIME" "$PHY" "$ALO_PID" "$ALO_TOTAL" "$Limit  >> "$OUTPUT_FILE"
+    log_verbose "$i second is collected to $OUTPUT_FILE"
   fi
-
-  #echo $TIME" 0 0 0 0"  >> "data/ref.log"
 
   END_TIME=$(date +%s%N)
   ELAPSED=$(($END_TIME - $START_TIME))
@@ -126,4 +62,4 @@ do
   fi
 done
 
-echo "Collection for $PROCESS done"
+echo "Collection for PID $PID done"
