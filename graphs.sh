@@ -1,5 +1,6 @@
 #!/bin/bash
 
+VERBOSE=${2:-0}
 
 
 
@@ -37,9 +38,9 @@ for filename in data/$1/*.log; do
     echo "generated graph for pid "$name
     ln -s $PWD/data/$1/mem_$name.log $PWD/data/mem.log
     if [ $PY_CHECK -eq 1 ]; then
-       gnuplot show_mem_2.plt
+       gnuplot -e "verbose=$VERBOSE" show_mem_2.plt
     else
-       gnuplot show_mem.plt
+       gnuplot -e "verbose=$VERBOSE" show_mem.plt
     fi
 
     cp mem-graph.png graphs/$1/mem_$name.png
@@ -52,7 +53,7 @@ if [ $PY_CHECK -eq 1 ]; then
   echo "generated graph for total "$name
   rm -f data/mem.log
   ln -s $PWD/data/$1/mem_$name.log $PWD/data/mem.log
-  gnuplot show_mem.plt
+  gnuplot -e "verbose=$VERBOSE" show_mem.plt
   cp mem-graph.png graphs/$1/mem_$name.png
 fi
 
