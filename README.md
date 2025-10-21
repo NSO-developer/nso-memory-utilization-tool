@@ -1,7 +1,7 @@
 # NSO Memory Utilization Measurement Tool
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/NSO-developer/nso-memory-utilization-tool)  
 
-This is a tool to plot live RSS(Physical Memory Utilization) and Memory Allocated for JavaVM, PythonVMs and NSO Core for NSO. The purpose of this tool is to gain a higher level overview on how memory usage developed during various of incident. Eventually help out Customer to understand what is actually happend in their enviorment, CX on troubleshooting and BU on understanding and fix the problem. 
+This is a tool to plot live RSS(Physical Memory Utilization) and Memory Allocated for JavaVM, PythonVMs and NSO Core for NSO. The purpose of this tool is to gain a higher level overview on how memory usage developed during various of incident. Eventually help out Customer to understand what is actually happened in their environment, CX on troubleshooting and BU on understanding and fix the problem. 
 
 ## Dependency
 Gnuplot
@@ -10,7 +10,7 @@ apt-get install gnuplot
 ```
 
 ## Usage
-Start measurment and input measurment time period. The diagram will generated afterwards in the graphs folder per process after the data collection
+Start measurement and input measurement time period. The diagram will generated afterwards in the graphs folder per process after the data collection
 ```
 sh plot.sh [--verbose|-v] <Time Duration>
 ```
@@ -24,19 +24,19 @@ sh plot.sh [--verbose|-v] <Time Duration>
 
 
 ## Diagram Generated
-All the diagram generated have a red warning line to indicate where is the CommitLimit except per VM PythonVM measurment. 
+All the diagram generated have a red warning line to indicate where is the CommitLimit except per VM PythonVM measurement. 
 * Allocated Memory per Process vs Total Allocated Memory(Commited_AS) vs Physical Memory Usage(RSS)
     * NSO Core(ncs.smp)
     * JavaVM
     * PythonVM
-        * per VM (Without CommitLimit Warning Line to increase visiblity)
+        * per VM (Without CommitLimit Warning Line to increase visibility)
         * Total for all the VMs
-* Comparision between ncs.smp, JavaVM and PythonVM
+* Comparison between ncs.smp, JavaVM and PythonVM
     * Allocated Memory per Process vs Total Allocated Memory(Commited_AS) 
     * Total Allocated Memory(Commited_AS) vs Physical Memory Usage(RSS)
 
 ## Recommended CommitLimit
-vm.overcommit_ratio can be calculated with the following formular
+vm.overcommit_ratio can be calculated with the following formula
 ```
 100(CommitLimit - SWAP) / (total_RAM - total_huge_TLB) = vm.overcommit_ratio
 ```
@@ -76,13 +76,13 @@ Customer has configured the following settings to only allow 50 percent of total
 # cat /proc/sys/vm/overcommit_memory
 2
 ```
-While NSO require much more than that during the startup. In the diagram below we can clearly see Memory allocated has cross the CommitLimit which triggeres a OOM Crash. 
+While NSO require much more than that during the startup. In the diagram below we can clearly see Memory allocated has cross the CommitLimit which triggers a OOM Crash. 
 ![alt text](sample_diagram/ncs.smp/mem_ncs.smp.png "Memory Consumption for NSO Core")
 
-The memory consumption diagram from ncs.smp shows the allocated memory has not significant spike during the time allocated memory spiked. This can show the issue is because some other process. For example a cron process lunched something exactly at that time. 
+The memory consumption diagram from ncs.smp shows the allocated memory has not significant spike during the time allocated memory spiked. This can show the issue is because some other process. For example a cron process launched something exactly at that time. 
 
 ## Problems and Bugs?
-Feels free to open issues or comment on the blog post.  
+Feel free to open issues or comment on the blog post.  
 Pull Request are welcome if one wants to contribute. 
 
 ## Copyright and License Notice
