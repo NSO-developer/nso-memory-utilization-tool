@@ -7,6 +7,7 @@ OUTPUT_FILE=$2
 DURATION=$3
 VERBOSE=${4:-0}
 SIGNAL_FILE=$5
+PARENT_PID=$PPID
 
 if [ -z "$PID" ] || [ -z "$OUTPUT_FILE" ] || [ -z "$DURATION" ]; then
   echo "Usage: $0 <pid> <output_file> <duration> [verbose_flag] [signal_file]"
@@ -16,6 +17,13 @@ fi
 log_verbose() {
   if [ $VERBOSE -eq 1 ]; then
     echo "$1"
+  fi
+}
+
+check_parent() {
+  if ! kill -0 $PARENT_PID 2>/dev/null; then
+    log_verbose "Parent process $PARENT_PID has died. Terminating collection for PID $PID."
+    exit 0
   fi
 }
 
@@ -37,6 +45,8 @@ fi
 for (( i=0;i<=$DURATION;i++ ))
 do
   START_TIME=$(date +%s%N)
+
+  check_parent
 
   ALO_TOTAL=$(cat /proc/meminfo | grep 'Committed_AS' | awk -F' ' '{print $2}')
   Limit=$(cat /proc/meminfo | grep 'CommitLimit' | awk -F' ' '{print $2}')

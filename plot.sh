@@ -2,6 +2,22 @@
 
 VERBOSE=0
 DURATION=""
+CHILD_PIDS=()
+
+cleanup() {
+  echo -e "\n\nReceived interrupt signal. Cleaning up..."
+  if [ ${#CHILD_PIDS[@]} -gt 0 ]; then
+    for pid in "${CHILD_PIDS[@]}"; do
+      kill "$pid" 2>/dev/null
+    done
+    wait 2>/dev/null
+  fi
+  rm -f "$SIGNAL_FILE"
+  echo "Cleanup complete. Exiting."
+  exit 130
+}
+
+trap cleanup SIGINT SIGTERM
 
 create_combined_python_log() {
   echo "Creating combined Python total log..."
@@ -84,6 +100,7 @@ NCS_PID=$(pgrep -f "\.smp.*-ncs true")
 if [ ! -z "$NCS_PID" ]; then
   echo "Starting collection for ncs.smp PID $NCS_PID"
   bash collect.sh $NCS_PID "data/ncs.smp/mem_ncs.smp.log" $DURATION $VERBOSE "$SIGNAL_FILE" &
+  CHILD_PIDS+=($!)
 fi
 
 # Collect NcsJVMLauncher process
@@ -91,6 +108,7 @@ JVM_PID=$(pgrep -f NcsJVMLauncher)
 if [ ! -z "$JVM_PID" ]; then
   echo "Starting collection for NcsJVMLauncher PID $JVM_PID"
   bash collect.sh $JVM_PID "data/NcsJVMLauncher/mem_NcsJVMLauncher.log" $DURATION $VERBOSE "$SIGNAL_FILE" &
+  CHILD_PIDS+=($!)
 fi
 
 # Collect Python processes
@@ -103,6 +121,7 @@ if [ ! -z "$PYTHON_PIDS" ]; then
     if [ ! -z "$PYTHON_SCRIPT" ]; then
       echo "Starting collection for Python process PID $pid: $SCRIPT_NAME"
       bash collect.sh $pid "data/python3/mem_$SCRIPT_NAME.log" $DURATION $VERBOSE "$SIGNAL_FILE" &
+      CHILD_PIDS+=($!)
     fi
   done
 else
@@ -118,6 +137,8 @@ touch "$SIGNAL_FILE"
 
 wait
 
+CHILD_PIDS=()
+
 # Clean up signal file
 rm -f "$SIGNAL_FILE"
 
@@ -129,21 +150,22 @@ echo "===================================== Collection for for all process done 
 
 
 echo "====================================== Plotting graph to all process ========================================================"
-echo "====================================== Plotting graph for ncs.smp process ========================================================"
-bash graphs.sh ncs.smp $VERBOSE
-echo -e "===================================== Plotting graph for ncs.smp process done  =================================================\n"
-echo "====================================== Plotting graph for NcsJVMLauncher process ========================================================"
-bash graphs.sh NcsJVMLauncher $VERBOSE
-echo "===================================== Plotting graph for NcsJVMLauncher process done  =================================================\n"
-echo "====================================== Plotting graph for python3 processes ========================================================\n"
+bash graphs.sh ncs.smp $VERBOSE &
+CHILD_PIDS+=($!)
+
+bash graphs.sh NcsJVMLauncher $VERBOSE &
+CHILD_PIDS+=($!)
+
 if [ -d "data/python3" ]; then
-  echo "Plotting combined graph for python3 processes"
-  bash graphs.sh python3 $VERBOSE
+  bash graphs.sh python3 $VERBOSE &
+  CHILD_PIDS+=($!)
 else
   echo "No python3 data directory found"
 fi
-echo "===================================== Plotting graph for python3 processes done  =================================================\n"
-echo "====================================== Plotting graph to compare between process ========================================================"
-bash graphs_compare.sh $VERBOSE
-echo -e "====================================== Plotting graph to compare between process done ========================================================\n"
+
+bash graphs_compare.sh $VERBOSE &
+CHILD_PIDS+=($!)
+
+wait
+
 echo "===================================== Plotting graph to all process done  ================================================="

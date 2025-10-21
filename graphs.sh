@@ -1,9 +1,9 @@
 #!/bin/bash
 
+PROCESS_TYPE=$1
 VERBOSE=${2:-0}
 
-
-
+echo "====================================== Plotting graph for $PROCESS_TYPE process ========================================================"
 
 PY_CHECK=0
 
@@ -59,3 +59,5 @@ fi
 
 rm -f graphs/mem_.png
 rm -f graphs/mem_--multiprocessing-fork.png
+
+echo "===================================== Plotting graph for $PROCESS_TYPE process done ================================================="
