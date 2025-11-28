@@ -19,6 +19,13 @@ log_verbose() {
   fi
 }
 
+if [[ $OUTPUT_FILE == *"python3"* ]]; then
+PYTHON_SWITCH=1
+else
+PYTHON_SWITCH=0
+fi
+
+
 OUTPUT_DIR=$(dirname "$OUTPUT_FILE")
 mkdir -p "$OUTPUT_DIR"
 
@@ -34,9 +41,9 @@ if [ ! -z "$SIGNAL_FILE" ]; then
   log_verbose "Start signal received. Beginning data collection for PID $PID..."
 fi
 
-for (( i=0;i<=$DURATION;i++ ))
-do
-  START_TIME=$(date +%s%N)
+# for (( i=0;i<=$DURATION;i++ ))
+# do
+#   START_TIME=$(date +%s%N)
 
   ALO_TOTAL=$(cat /proc/meminfo | grep 'Committed_AS' | awk -F' ' '{print $2}')
   Limit=$(cat /proc/meminfo | grep 'CommitLimit' | awk -F' ' '{print $2}')
@@ -52,14 +59,14 @@ do
     log_verbose "$i second is collected to $OUTPUT_FILE"
   fi
 
-  END_TIME=$(date +%s%N)
-  ELAPSED=$(($END_TIME - $START_TIME))
-  SLEEP_TIME=$(($NS - $ELAPSED))
+  # END_TIME=$(date +%s%N)
+  # ELAPSED=$(($END_TIME - $START_TIME))
+  # SLEEP_TIME=$(($NS - $ELAPSED))
 
-  if (( SLEEP_TIME > 0 )); then
-    SLEEP_SECONDS=$(awk "BEGIN {printf \"%.9f\", $SLEEP_TIME/$NS}")
-    sleep $SLEEP_SECONDS
-  fi
-done
+#   if (( SLEEP_TIME > 0 )); then
+#     SLEEP_SECONDS=$(awk "BEGIN {printf \"%.9f\", $SLEEP_TIME/$NS}")
+#     sleep $SLEEP_SECONDS
+#   fi
+# done
 
-echo "Collection for PID $PID done"
+#echo "Collection for PID $PID done"

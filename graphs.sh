@@ -28,7 +28,7 @@ mkdir graphs/$1
 
 for filename in data/$1/*.log; do
   if [ $PY_CHECK -eq 1 ]; then
-     name=$(echo $filename | awk -F'/' '{print $NF}' | awk -F'mem_|\.log' '{print $2}')
+     name=$(echo $filename | awk -F'/' '{print $NF}' | awk -F'mem_|.log' '{print $2}')
   else
     name=$1
   fi

@@ -79,47 +79,82 @@ rm -f "$SIGNAL_FILE"
 # Find and collect for each process type
 echo "Starting collection processes..."
 
-# Collect ncs.smp or beam.smp NSO process
-NCS_PID=$(pgrep -f "\.smp.*-ncs true")
-if [ ! -z "$NCS_PID" ]; then
-  echo "Starting collection for ncs.smp PID $NCS_PID"
-  bash collect.sh $NCS_PID "data/ncs.smp/mem_ncs.smp.log" $DURATION $VERBOSE "$SIGNAL_FILE" &
-fi
+NS=1000000000
 
-# Collect NcsJVMLauncher process
-JVM_PID=$(pgrep -f NcsJVMLauncher)
-if [ ! -z "$JVM_PID" ]; then
-  echo "Starting collection for NcsJVMLauncher PID $JVM_PID"
-  bash collect.sh $JVM_PID "data/NcsJVMLauncher/mem_NcsJVMLauncher.log" $DURATION $VERBOSE "$SIGNAL_FILE" &
-fi
+mkdir -p data/python3
+for (( i=0;i<=$DURATION;i++ ))
+do
+  START_TIME=$(date +%s%N)
+  PYTHON_PIDS=$(pgrep -f "python.* .*startup\.py")
+  JVM_PID=$(pgrep -f NcsJVMLauncher)
+  NCS_PID=$(pgrep -f "\.smp.*-ncs true")
 
-# Collect Python processes
-PYTHON_PIDS=$(pgrep -f "python.* .*startup\.py")
-if [ ! -z "$PYTHON_PIDS" ]; then
-  mkdir -p data/python3
-  for pid in $PYTHON_PIDS; do
-    PYTHON_SCRIPT=$(ps -p $pid -o command | tail -n 1 | awk -F' ' '{print $9}')
-    SCRIPT_NAME=$(basename "$PYTHON_SCRIPT" .py 2>/dev/null || echo "python_$pid")
-    if [ ! -z "$PYTHON_SCRIPT" ]; then
-      echo "Starting collection for Python process PID $pid: $SCRIPT_NAME"
-      bash collect.sh $pid "data/python3/mem_$SCRIPT_NAME.log" $DURATION $VERBOSE "$SIGNAL_FILE" &
+  # Collect ncs.smp or beam.smp NSO process
+  if [ ! -z "$NCS_PID" ]; then
+    #echo "Starting collection for ncs.smp PID $NCS_PID"
+    COLLECT_PIDS=$(pgrep -f ".*collect.sh.* $NCS_PID")
+    if [ -z "$COLLECT_PIDS" ]; then
+      bash collect.sh $NCS_PID "data/ncs.smp/mem_ncs.smp.log" $DURATION $VERBOSE "$SIGNAL_FILE" &
     fi
-  done
-else
-  echo "No Python processes found to collect"
-fi
+  fi
 
-# Give a moment for all processes to register
-sleep 1
+  # Collect NcsJVMLauncher process
+  if [ ! -z "$JVM_PID" ]; then
+    #echo "Starting collection for NcsJVMLauncher PID $JVM_PID"
+    COLLECT_PIDS=$(pgrep -f ".*collect.sh.* $JVM_PID")
+    if [ -z "$COLLECT_PIDS" ]; then
+      bash collect.sh $JVM_PID "data/NcsJVMLauncher/mem_NcsJVMLauncher.log" $DURATION $VERBOSE "$SIGNAL_FILE" &
+    fi
+  fi
 
-# Signal all processes to start collecting
-echo "All collection processes started. Signaling to begin data collection..."
-touch "$SIGNAL_FILE"
+  # Collect Python processes
+  if [ ! -z "$PYTHON_PIDS" ]; then
+    for pid in $PYTHON_PIDS; do
+      COLLECT_PIDS=$(pgrep -f ".*collect.sh.* $pid")
+      if [ -z "$COLLECT_PIDS" ]; then
+        #echo "Not Found Collection Process for Python process PID $pid. Spwaning new Collection Process."
+        PYTHON_SCRIPT=$(ps -p $pid -o command | tail -n 1 | awk -F' ' '{print $9}')
+        SCRIPT_NAME=$(basename "$PYTHON_SCRIPT" .py 2>/dev/null || echo "python_$pid")
+        if [ ! -z "$PYTHON_SCRIPT" ]; then
+          #echo "Starting collection for Python process PID $pid: $SCRIPT_NAME"
+          bash collect.sh $pid "data/python3/mem_$SCRIPT_NAME.log" $DURATION-$i $VERBOSE "$SIGNAL_FILE" &
+        fi
+      # else
+      #   echo "Collection Process already running for Python process PID $pid"
+      fi
+    done
+  # else
+  #   echo "No Python processes found to collect. for second $i"
+  fi
+ 
 
-wait
+  
+  END_TIME=$(date +%s%N)
+  ELAPSED=$(($END_TIME - $START_TIME))
+  SLEEP_TIME=$(($NS - $ELAPSED))
+  if (( SLEEP_TIME > 0 )); then
+    SLEEP_SECONDS=$(awk "BEGIN {printf \"%.9f\", $SLEEP_TIME/$NS}")
+    #echo $SLEEP_SECONDS
+    sleep $SLEEP_SECONDS
+  fi
 
-# Clean up signal file
-rm -f "$SIGNAL_FILE"
+  # Signal all processes to start collecting
+  touch "$SIGNAL_FILE"
+  wait
+  echo -ne "Data Collection - $i second out of $DURATION second"\\r
+
+  # Clean up signal file
+  rm -f "$SIGNAL_FILE"
+  pkill -f collect.sh
+#  # Give a moment for all processes to register
+#  sleep 1
+done
+
+echo ""
+echo "Data Collection - OK!"
+
+sleep 2
+
 
 if [ ! -z "$PYTHON_PIDS" ]; then
   create_combined_python_log
