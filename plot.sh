@@ -99,7 +99,7 @@ do
     if [ -z "$COLLECT_PIDS" ]; then
       echo "New ncs.smp process PID $NCS_PID: ncs.smp. Start Collection"
       counter=$((counter+1))
-      bash collect.sh $NCS_PID "data/ncs.smp/mem_ncs.smp.log" $DURATION $VERBOSE "$SIGNAL_FILE" &
+      bash collect.sh $NCS_PID "data/ncs.smp/mem_ncs.smp.log" $DURATION $VERBOSE "$SIGNAL_FILE" $i &
     fi
   fi
 
@@ -109,7 +109,7 @@ do
     if [ -z "$COLLECT_PIDS" ]; then
       echo "New JVM process PID $JVM_PID: NcsJVMLauncher. Start Collection"
       counter=$((counter+1))
-      bash collect.sh $JVM_PID "data/NcsJVMLauncher/mem_NcsJVMLauncher.log" $DURATION $VERBOSE "$SIGNAL_FILE" &
+      bash collect.sh $JVM_PID "data/NcsJVMLauncher/mem_NcsJVMLauncher.log" $DURATION $VERBOSE "$SIGNAL_FILE" $i &
     fi
   fi
 
@@ -123,7 +123,7 @@ do
         if [ ! -z "$PYTHON_SCRIPT" ]; then
           echo "New Python process PID $pid: $SCRIPT_NAME. Start Collection"
           counter=$((counter+1))
-          bash collect.sh $pid "data/python3/mem_$SCRIPT_NAME.log" $DURATION-$i $VERBOSE "$SIGNAL_FILE" &
+          bash collect.sh $pid "data/python3/mem_$SCRIPT_NAME.log" $DURATION $VERBOSE "$SIGNAL_FILE" $i &
         fi
 
       fi
