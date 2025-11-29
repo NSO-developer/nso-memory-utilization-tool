@@ -8,7 +8,7 @@ DURATION=$3
 VERBOSE=${4:-0}
 SIGNAL_FILE=$5
 SIGNALBACK_FILE="/tmp/signalback/nso_collect_start_signalback_$$"
-
+STARTI=$6
 
 if [ -z "$PID" ] || [ -z "$OUTPUT_FILE" ] || [ -z "$DURATION" ]; then
   echo "Usage: $0 <pid> <output_file> <duration> [verbose_flag] [signal_file]"
@@ -34,7 +34,7 @@ mkdir -p "$OUTPUT_DIR"
 
 
  
-for (( i=0;i<=$DURATION;i++ ))
+for (( i=$STARTI;i<=$DURATION;i++ ))
 do
   
   # Wait for centralized controller signal
