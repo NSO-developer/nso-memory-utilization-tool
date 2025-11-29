@@ -56,8 +56,8 @@ set format x '%H:%M:%S'
 
 show style line
 
-plot "data/python3/mem_ncs.smp.log" using 1:5 with lines axes x1y1 lc 'red' lw 2 title "CommitLimit", \
-     "data/python3/mem_ncs.smp.log" using 1:4 with lines axes x1y1 title "Commited_AS", \
+plot "data/ncs.smp/mem_ncs.smp.log" using 1:5 with lines axes x1y1 lc 'red' lw 2 title "CommitLimit", \
+     "data/ncs.smp/mem_ncs.smp.log" using 1:4 with lines axes x1y1 title "Commited_AS", \
      "data/ncs.smp/mem_ncs.smp.log" using 1:3 with lines axes x1y1 title "ncs.smp", \
      "data/python3/mem_total.log" using 1:3 with lines axes x1y1 title "PythonVM(Total)", \
      "data/NcsJVMLauncher/mem_NcsJVMLauncher.log" using 1:3 with lines axes x1y1 title "JavaVM"

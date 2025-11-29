@@ -7,6 +7,8 @@ OUTPUT_FILE=$2
 DURATION=$3
 VERBOSE=${4:-0}
 SIGNAL_FILE=$5
+SIGNALBACK_FILE="/tmp/signalback/nso_collect_start_signalback_$$"
+
 
 if [ -z "$PID" ] || [ -z "$OUTPUT_FILE" ] || [ -z "$DURATION" ]; then
   echo "Usage: $0 <pid> <output_file> <duration> [verbose_flag] [signal_file]"
@@ -30,21 +32,30 @@ OUTPUT_DIR=$(dirname "$OUTPUT_FILE")
 mkdir -p "$OUTPUT_DIR"
 
 
-# Wait for all collection processes to be ready before starting
-if [ ! -z "$SIGNAL_FILE" ]; then
-  log_verbose "Waiting for start signal..."
 
-  while [ ! -f "$SIGNAL_FILE" ]; do
-    sleep 0.1
-  done
+ 
+for (( i=0;i<=$DURATION;i++ ))
+do
+  
+  # Wait for centralized controller signal
+  if [ ! -z "$SIGNAL_FILE" ]; then
+    log_verbose "Waiting for start signal..."
+    #echo "Waiting for start signal..."
+    while true; do
+      if [ ! -f "$SIGNAL_FILE" ]; then
+        sleep 0.1
+      elif [[ $(cat $SIGNAL_FILE) -ne $i ]];then
+        sleep 0.1
+      else
+        break
+      fi
+    done
+    
 
-  log_verbose "Start signal received. Beginning data collection for PID $PID..."
-fi
-
-# for (( i=0;i<=$DURATION;i++ ))
-# do
-#   START_TIME=$(date +%s%N)
-
+    log_verbose "Start signal received. Beginning data collection for PID $PID..."
+  fi
+  rm -f $SIGNALBACK_FILE
+  # Tick!
   ALO_TOTAL=$(cat /proc/meminfo | grep 'Committed_AS' | awk -F' ' '{print $2}')
   Limit=$(cat /proc/meminfo | grep 'CommitLimit' | awk -F' ' '{print $2}')
 
@@ -58,15 +69,9 @@ fi
     echo $TIME" "$PHY" "$ALO_PID" "$ALO_TOTAL" "$Limit  >> "$OUTPUT_FILE"
     log_verbose "$i second is collected to $OUTPUT_FILE"
   fi
+  touch $SIGNALBACK_FILE
 
-  # END_TIME=$(date +%s%N)
-  # ELAPSED=$(($END_TIME - $START_TIME))
-  # SLEEP_TIME=$(($NS - $ELAPSED))
 
-#   if (( SLEEP_TIME > 0 )); then
-#     SLEEP_SECONDS=$(awk "BEGIN {printf \"%.9f\", $SLEEP_TIME/$NS}")
-#     sleep $SLEEP_SECONDS
-#   fi
-# done
+ done
 
-#echo "Collection for PID $PID done"
+log_verbose "Collection for PID $PID done"

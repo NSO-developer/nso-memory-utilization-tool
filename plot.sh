@@ -76,33 +76,39 @@ echo "====================================== Collection for for all process ====
 SIGNAL_FILE="/tmp/nso_collect_start_signal_$$"
 rm -f "$SIGNAL_FILE"
 
+rm -rf "/tmp/signalback"
+mkdir "/tmp/signalback"
+
 # Find and collect for each process type
 echo "Starting collection processes..."
 
 NS=1000000000
+counter=0
 
 mkdir -p data/python3
 for (( i=0;i<=$DURATION;i++ ))
 do
   START_TIME=$(date +%s%N)
   PYTHON_PIDS=$(pgrep -f "python.* .*startup\.py")
-  JVM_PID=$(pgrep -f NcsJVMLauncher)
+  JVM_PID=$(pgrep -f com.tailf.ncs.NcsJVMLauncher)
   NCS_PID=$(pgrep -f "\.smp.*-ncs true")
 
   # Collect ncs.smp or beam.smp NSO process
   if [ ! -z "$NCS_PID" ]; then
-    #echo "Starting collection for ncs.smp PID $NCS_PID"
     COLLECT_PIDS=$(pgrep -f ".*collect.sh.* $NCS_PID")
     if [ -z "$COLLECT_PIDS" ]; then
+      echo "New ncs.smp process PID $NCS_PID: ncs.smp. Start Collection"
+      counter=$((counter+1))
       bash collect.sh $NCS_PID "data/ncs.smp/mem_ncs.smp.log" $DURATION $VERBOSE "$SIGNAL_FILE" &
     fi
   fi
 
   # Collect NcsJVMLauncher process
   if [ ! -z "$JVM_PID" ]; then
-    #echo "Starting collection for NcsJVMLauncher PID $JVM_PID"
     COLLECT_PIDS=$(pgrep -f ".*collect.sh.* $JVM_PID")
     if [ -z "$COLLECT_PIDS" ]; then
+      echo "New JVM process PID $JVM_PID: NcsJVMLauncher. Start Collection"
+      counter=$((counter+1))
       bash collect.sh $JVM_PID "data/NcsJVMLauncher/mem_NcsJVMLauncher.log" $DURATION $VERBOSE "$SIGNAL_FILE" &
     fi
   fi
@@ -112,19 +118,16 @@ do
     for pid in $PYTHON_PIDS; do
       COLLECT_PIDS=$(pgrep -f ".*collect.sh.* $pid")
       if [ -z "$COLLECT_PIDS" ]; then
-        #echo "Not Found Collection Process for Python process PID $pid. Spwaning new Collection Process."
         PYTHON_SCRIPT=$(ps -p $pid -o command | tail -n 1 | awk -F' ' '{print $9}')
         SCRIPT_NAME=$(basename "$PYTHON_SCRIPT" .py 2>/dev/null || echo "python_$pid")
         if [ ! -z "$PYTHON_SCRIPT" ]; then
-          #echo "Starting collection for Python process PID $pid: $SCRIPT_NAME"
+          echo "New Python process PID $pid: $SCRIPT_NAME. Start Collection"
+          counter=$((counter+1))
           bash collect.sh $pid "data/python3/mem_$SCRIPT_NAME.log" $DURATION-$i $VERBOSE "$SIGNAL_FILE" &
         fi
-      # else
-      #   echo "Collection Process already running for Python process PID $pid"
+
       fi
     done
-  # else
-  #   echo "No Python processes found to collect. for second $i"
   fi
  
 
@@ -139,17 +142,26 @@ do
   fi
 
   # Signal all processes to start collecting
-  touch "$SIGNAL_FILE"
-  wait
-  echo -ne "Data Collection - $i second out of $DURATION second"\\r
+  echo "$i" > $SIGNAL_FILE
 
+  while [[ $(ps -aux | grep "collect.sh" | wc -l) -gt $(($(ls "/tmp/signalback" | wc -l)+1)) ]]; do
+
+      sleep 0.1
+    done
   # Clean up signal file
   rm -f "$SIGNAL_FILE"
-  pkill -f collect.sh
-#  # Give a moment for all processes to register
-#  sleep 1
+
+  rm -rf "/tmp/signalback"
+  mkdir "/tmp/signalback"
+
+  echo -ne "Data Collection - $i second out of $DURATION second"\\r
+
+
 done
 
+wait
+pkill -f collect.sh
+rm -rf "/tmp/signalback"
 echo ""
 echo "Data Collection - OK!"
 
