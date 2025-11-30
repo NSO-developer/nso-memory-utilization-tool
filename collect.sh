@@ -7,7 +7,6 @@ OUTPUT_FILE=$2
 DURATION=$3
 VERBOSE=${4:-0}
 SIGNAL_FILE=$5
-SIGNALBACK_FILE="/tmp/signalback/nso_collect_start_signalback_$$"
 STARTI=$6
 
 if [ -z "$PID" ] || [ -z "$OUTPUT_FILE" ] || [ -z "$DURATION" ]; then
@@ -36,25 +35,32 @@ mkdir -p "$OUTPUT_DIR"
  
 for (( i=$STARTI;i<=$DURATION;i++ ))
 do
-  
+  SIGNALBACK_FILE="/tmp/signalback/nso_collect_start_signalback_$$_$i"
+
   # Wait for centralized controller signal
   if [ ! -z "$SIGNAL_FILE" ]; then
     log_verbose "Waiting for start signal..."
     #echo "Waiting for start signal..."
+
     while true; do
-      if [ ! -f "$SIGNAL_FILE" ]; then
-        sleep 0.1
-      elif [[ $(cat $SIGNAL_FILE) -ne $i ]];then
-        sleep 0.1
+      if [ -f "$SIGNAL_FILE" ]; then
+        Data=$(cat $SIGNAL_FILE 2>/dev/null || echo 12345678999999  )
+        if  [[ $Data -eq $i ]]; then
+              break
+              log_verbose "Start signal received. Beginning data collection for PID $PID..."
+        else
+           sleep 0.1 
+        fi
       else
-        break
+         sleep 0.1
       fi
     done
-    
 
-    log_verbose "Start signal received. Beginning data collection for PID $PID..."
+  else 
+      echo "SIGNAL_FILE Parameter not provided"
   fi
-  rm -f $SIGNALBACK_FILE
+  
+  #rm -f $SIGNALBACK_FILE
   # Tick!
   ALO_TOTAL=$(cat /proc/meminfo | grep 'Committed_AS' | awk -F' ' '{print $2}')
   Limit=$(cat /proc/meminfo | grep 'CommitLimit' | awk -F' ' '{print $2}')
@@ -63,10 +69,13 @@ do
 
   log_verbose "Monitoring PID: $PID"
   ALO_PID=$(pmap -d $PID | grep "writeable/private" | awk -F' ' '{print $4}' | egrep -o '[0-9.]+'  )
-  PHY=$(cat /proc/$PID/status | grep VmRSS | awk -F' ' '{print $2}')
+  PHY=$(cat /proc/$PID/status 2>/dev/null || echo "" | grep VmRSS | awk -F' ' '{print $2}')
 
   if [ ! -z "$ALO_PID" ] && [ ! -z "$PHY" ]; then
     echo $TIME" "$PHY" "$ALO_PID" "$ALO_TOTAL" "$Limit  >> "$OUTPUT_FILE"
+    log_verbose "$i second is collected to $OUTPUT_FILE"
+  else
+    echo $TIME" "0" "0" "$ALO_TOTAL" "$Limit  >> "$OUTPUT_FILE"
     log_verbose "$i second is collected to $OUTPUT_FILE"
   fi
   touch $SIGNALBACK_FILE

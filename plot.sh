@@ -76,7 +76,7 @@ echo "====================================== Collection for for all process ====
 SIGNAL_FILE="/tmp/nso_collect_start_signal_$$"
 rm -f "$SIGNAL_FILE"
 
-rm -rf "/tmp/signalback"
+rm -rf /tmp/signalback
 mkdir "/tmp/signalback"
 
 # Find and collect for each process type
@@ -132,6 +132,19 @@ do
  
 
   
+  sleep 0.1
+  # Signal all processes to start collecting
+  echo $i > $SIGNAL_FILE
+
+  while [[ $(ps -aux | grep "collect.sh" | wc -l) -gt $(($(ls "/tmp/signalback/" | grep "nso_collect_start_signalback_.*_$i" | wc -l)+1)) ]]; do
+      sleep 0.1
+    done
+
+  # Clean up signal file
+  rm -f $SIGNAL_FILE
+  rm -rf /tmp/signalback/*
+  
+
   END_TIME=$(date +%s%N)
   ELAPSED=$(($END_TIME - $START_TIME))
   SLEEP_TIME=$(($NS - $ELAPSED))
@@ -141,27 +154,16 @@ do
     sleep $SLEEP_SECONDS
   fi
 
-  # Signal all processes to start collecting
-  echo "$i" > $SIGNAL_FILE
-
-  while [[ $(ps -aux | grep "collect.sh" | wc -l) -gt $(($(ls "/tmp/signalback" | wc -l)+1)) ]]; do
-
-      sleep 0.1
-    done
-  # Clean up signal file
-  rm -f "$SIGNAL_FILE"
-
-  rm -rf "/tmp/signalback"
-  mkdir "/tmp/signalback"
-
   echo -ne "Data Collection - $i second out of $DURATION second"\\r
-
 
 done
 
+
 wait
+
+
 pkill -f collect.sh
-rm -rf "/tmp/signalback"
+rm -rf /tmp/signalback
 echo ""
 echo "Data Collection - OK!"
 
