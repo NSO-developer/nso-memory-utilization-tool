@@ -95,37 +95,36 @@ do
 
   # Collect ncs.smp or beam.smp NSO process
   if [ ! -z "$NCS_PID" ]; then
-    COLLECT_PIDS=$(pgrep -f ".*collect.sh.* $NCS_PID")
+    COLLECT_PIDS=$(pgrep -f '.*collect.sh.*ncs.smp')
     if [ -z "$COLLECT_PIDS" ]; then
       echo "New ncs.smp process PID $NCS_PID: ncs.smp. Start Collection"
       counter=$((counter+1))
-      bash collect.sh $NCS_PID "data/ncs.smp/mem_ncs.smp.log" $DURATION $VERBOSE "$SIGNAL_FILE" $i &
+      bash collect.sh ncs.smp "data/ncs.smp/mem_ncs.smp.log" $DURATION $VERBOSE "$SIGNAL_FILE" $i &
     fi
   fi
 
   # Collect NcsJVMLauncher process
   if [ ! -z "$JVM_PID" ]; then
-    COLLECT_PIDS=$(pgrep -f ".*collect.sh.* $JVM_PID")
+    COLLECT_PIDS=$(pgrep -f ".*collect.sh.*NcsJVMLauncher")
     if [ -z "$COLLECT_PIDS" ]; then
       echo "New JVM process PID $JVM_PID: NcsJVMLauncher. Start Collection"
       counter=$((counter+1))
-      bash collect.sh $JVM_PID "data/NcsJVMLauncher/mem_NcsJVMLauncher.log" $DURATION $VERBOSE "$SIGNAL_FILE" $i &
+      bash collect.sh NcsJVMLauncher "data/NcsJVMLauncher/mem_NcsJVMLauncher.log" $DURATION $VERBOSE "$SIGNAL_FILE" $i &
     fi
   fi
 
   # Collect Python processes
   if [ ! -z "$PYTHON_PIDS" ]; then
     for pid in $PYTHON_PIDS; do
-      COLLECT_PIDS=$(pgrep -f ".*collect.sh.* $pid")
+      PYTHON_SCRIPT=$(ps -p $pid -o command | tail -n 1 | awk -F' ' '{print $9}')
+      SCRIPT_NAME=$(basename "$PYTHON_SCRIPT" .py 2>/dev/null || echo "python_$pid")
+      COLLECT_PIDS=$(pgrep -f ".*collect.sh.* $SCRIPT_NAME")
       if [ -z "$COLLECT_PIDS" ]; then
-        PYTHON_SCRIPT=$(ps -p $pid -o command | tail -n 1 | awk -F' ' '{print $9}')
-        SCRIPT_NAME=$(basename "$PYTHON_SCRIPT" .py 2>/dev/null || echo "python_$pid")
         if [ ! -z "$PYTHON_SCRIPT" ]; then
           echo "New Python process PID $pid: $SCRIPT_NAME. Start Collection"
           counter=$((counter+1))
-          bash collect.sh $pid "data/python3/mem_$SCRIPT_NAME.log" $DURATION $VERBOSE "$SIGNAL_FILE" $i &
+          bash collect.sh "$SCRIPT_NAME" "data/python3/mem_$SCRIPT_NAME.log" $DURATION $VERBOSE "$SIGNAL_FILE" $i &
         fi
-
       fi
     done
   fi

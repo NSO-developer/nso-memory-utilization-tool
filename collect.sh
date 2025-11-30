@@ -2,7 +2,9 @@
 
 NS=1000000000
 
-PID=$1
+
+SCRIPT_NAME=$1
+PID=$(pgrep -f "$SCRIPT_NAME")
 OUTPUT_FILE=$2
 DURATION=$3
 VERBOSE=${4:-0}
@@ -21,9 +23,13 @@ log_verbose() {
 }
 
 if [[ $OUTPUT_FILE == *"python3"* ]]; then
-PYTHON_SWITCH=1
+  TYPE=1
+elif [[ $OUTPUT_FILE == *"ncs.smp"* ]]; then
+  TYPE=2
+elif [[ $OUTPUT_FILE == *"NcsJVMLauncher"* ]]; then
+  TYPE=3
 else
-PYTHON_SWITCH=0
+  TYPE=4
 fi
 
 
@@ -36,7 +42,6 @@ mkdir -p "$OUTPUT_DIR"
 for (( i=$STARTI;i<=$DURATION;i++ ))
 do
   SIGNALBACK_FILE="/tmp/signalback/nso_collect_start_signalback_$$_$i"
-
   # Wait for centralized controller signal
   if [ ! -z "$SIGNAL_FILE" ]; then
     log_verbose "Waiting for start signal..."
@@ -47,7 +52,7 @@ do
         Data=$(cat $SIGNAL_FILE 2>/dev/null || echo 12345678999999  )
         if  [[ $Data -eq $i ]]; then
               break
-              log_verbose "Start signal received. Beginning data collection for PID $PID..."
+              log_verbose "Start signal received. Beginning data collection for PID $SCRIPT_NAME..."
         else
            sleep 0.1 
         fi
@@ -59,26 +64,45 @@ do
   else 
       echo "SIGNAL_FILE Parameter not provided"
   fi
-  
+
   #rm -f $SIGNALBACK_FILE
   # Tick!
+  if  [[ $TYPE -eq 1 ]]; then
+    PID=$(pgrep -f "./logs/ncs-python-vm -i $SCRIPT_NAME") #
+  elif  [[ $TYPE -eq 2 ]]; then
+    PID=$(pgrep -f "\.smp.*-ncs true") #./logs/ncs-python-vm -i 
+  elif  [[ $TYPE -eq 3 ]]; then
+    PID=$(pgrep -f "com.tailf.ncs.NcsJVMLauncher") #./logs/ncs-python-vm -i 
+  else
+    PID=$(pgrep -f "$SCRIPT_NAME") #./logs/ncs-python-vm -i 
+  fi
+  
+  #echo $PID" "$SCRIPT_NAME" "$PYTHON_SWITCH" "$OUTPUT_FILE
   ALO_TOTAL=$(cat /proc/meminfo | grep 'Committed_AS' | awk -F' ' '{print $2}')
   Limit=$(cat /proc/meminfo | grep 'CommitLimit' | awk -F' ' '{print $2}')
-
   TIME=$(date +%T)
+  if [ ! -z "$PID" ]; then
+    log_verbose "Monitoring PID: $PID"
+    ALO_PID=$(pmap -d $PID | grep "writeable/private" | awk -F' ' '{print $4}' | egrep -o '[0-9.]+'  )
+    PHY=$(cat /proc/$PID/status 2>/dev/null | grep VmRSS | awk -F' ' '{print $2}')
+    #echo $ALO_PID
 
-  log_verbose "Monitoring PID: $PID"
-  ALO_PID=$(pmap -d $PID | grep "writeable/private" | awk -F' ' '{print $4}' | egrep -o '[0-9.]+'  )
-  PHY=$(cat /proc/$PID/status 2>/dev/null || echo "" | grep VmRSS | awk -F' ' '{print $2}')
-
-  if [ ! -z "$ALO_PID" ] && [ ! -z "$PHY" ]; then
-    echo $TIME" "$PHY" "$ALO_PID" "$ALO_TOTAL" "$Limit  >> "$OUTPUT_FILE"
-    log_verbose "$i second is collected to $OUTPUT_FILE"
+    if [ ! -z "$ALO_PID" ] && [ ! -z "$PHY" ]; then
+      echo $TIME" "$PHY" "$ALO_PID" "$ALO_TOTAL" "$Limit $PID >> "$OUTPUT_FILE"
+      log_verbose "$i second is collected to $OUTPUT_FILE"
+    else
+      echo $TIME" "0" "0" "$ALO_TOTAL" "$Limit >> "$OUTPUT_FILE"
+      log_verbose "$i second is collected to $OUTPUT_FILE"
+    fi
   else
-    echo $TIME" "0" "0" "$ALO_TOTAL" "$Limit  >> "$OUTPUT_FILE"
+    echo $TIME" "0" "0" "$ALO_TOTAL" "$Limit >> "$OUTPUT_FILE"
     log_verbose "$i second is collected to $OUTPUT_FILE"
   fi
   touch $SIGNALBACK_FILE
+
+  ALO_PID=""
+  PHY=""
+  unset PID
 
 
  done
