@@ -70,7 +70,7 @@ do
   #rm -f $SIGNALBACK_FILE
   # Tick!
   if  [[ $TYPE -eq 1 ]]; then
-    PID=$(pgrep -f "./logs/ncs-python-vm -i $SCRIPT_NAME") #
+    PID=$(pgrep -f "./logs/ncs-python-vm -i $SCRIPT_NAME -s") #
   elif  [[ $TYPE -eq 2 ]]; then
     PID=$(pgrep -f "\.smp.*-ncs true") #./logs/ncs-python-vm -i 
   elif  [[ $TYPE -eq 3 ]]; then
@@ -96,10 +96,12 @@ do
       fi
       log_verbose "$i second is collected to $OUTPUT_FILE"
     else
+      #echo "empty 1"
       echo $TIME" "0" "0" "$ALO_TOTAL" "$Limit >> "$OUTPUT_FILE"
       log_verbose "$i second is collected to $OUTPUT_FILE"
     fi
   else
+    #echo "empty 2"
     echo $TIME" "0" "0" "$ALO_TOTAL" "$Limit >> "$OUTPUT_FILE"
     log_verbose "$i second is collected to $OUTPUT_FILE"
   fi
