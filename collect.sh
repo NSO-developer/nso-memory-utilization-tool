@@ -10,6 +10,7 @@ DURATION=$3
 VERBOSE=${4:-0}
 SIGNAL_FILE=$5
 STARTI=$6
+CACHE_FILE="/tmp/cache.log"
 
 if [ -z "$PID" ] || [ -z "$OUTPUT_FILE" ] || [ -z "$DURATION" ]; then
   echo "Usage: $0 <pid> <output_file> <duration> [verbose_flag] [signal_file]"
@@ -90,6 +91,9 @@ do
 
     if [ ! -z "$ALO_PID" ] && [ ! -z "$PHY" ]; then
       echo $TIME" "$PHY" "$ALO_PID" "$ALO_TOTAL" "$Limit $PID >> "$OUTPUT_FILE"
+      if  [[ $TYPE -eq 2 ]]; then
+          echo $TIME" "0" "0" "$ALO_TOTAL" "$Limit >> "$CACHE_FILE"
+      fi
       log_verbose "$i second is collected to $OUTPUT_FILE"
     else
       echo $TIME" "0" "0" "$ALO_TOTAL" "$Limit >> "$OUTPUT_FILE"

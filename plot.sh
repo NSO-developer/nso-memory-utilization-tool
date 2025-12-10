@@ -85,6 +85,9 @@ echo "Starting collection processes..."
 NS=1000000000
 counter=0
 
+CACHE_FILE="/tmp/cache.log"
+touch $CACHE_FILE
+
 mkdir -p data/python3
 for (( i=0;i<=$DURATION;i++ ))
 do
@@ -122,6 +125,7 @@ do
       if [ -z "$COLLECT_PIDS" ]; then
         if [ ! -z "$PYTHON_SCRIPT" ]; then
           echo "New Python process PID $pid: $SCRIPT_NAME. Start Collection"
+          cp $CACHE_FILE "data/python3/mem_$SCRIPT_NAME.log"
           counter=$((counter+1))
           bash collect.sh "$SCRIPT_NAME" "data/python3/mem_$SCRIPT_NAME.log" $DURATION $VERBOSE "$SIGNAL_FILE" $i &
         fi
@@ -165,6 +169,7 @@ wait
 
 pkill -f collect.sh
 rm -rf /tmp/signalback
+rm $CACHE_FILE
 echo ""
 echo "Data Collection - OK!"
 
