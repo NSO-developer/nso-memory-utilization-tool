@@ -133,7 +133,9 @@ do
   
   sleep 0.1
   # Signal all processes to start collecting
+  TIME=$(date +%T)
   echo $i > $SIGNAL_FILE
+  echo $TIME >> $SIGNAL_FILE
 
   while [[ $(ps -aux | grep "collect.sh" | wc -l) -gt $(($(ls "/tmp/signalback/" | grep "nso_collect_start_signalback_.*_$i" | wc -l)+1)) ]]; do
       sleep 0.1

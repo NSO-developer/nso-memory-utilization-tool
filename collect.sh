@@ -49,7 +49,8 @@ do
 
     while true; do
       if [ -f "$SIGNAL_FILE" ]; then
-        Data=$(cat $SIGNAL_FILE 2>/dev/null || echo 12345678999999  )
+#        Data=$(cat $SIGNAL_FILE 2>/dev/null || echo 12345678999999  )
+         Data=$(awk 'NR==1' $SIGNAL_FILE 2>/dev/null || echo 12345678999999)
         if  [[ $Data -eq $i ]]; then
               break
               log_verbose "Start signal received. Beginning data collection for PID $SCRIPT_NAME..."
@@ -80,7 +81,7 @@ do
   #echo $PID" "$SCRIPT_NAME" "$PYTHON_SWITCH" "$OUTPUT_FILE
   ALO_TOTAL=$(cat /proc/meminfo | grep 'Committed_AS' | awk -F' ' '{print $2}')
   Limit=$(cat /proc/meminfo | grep 'CommitLimit' | awk -F' ' '{print $2}')
-  TIME=$(date +%T)
+  TIME=$(awk 'NR==2' $SIGNAL_FILE 2>/dev/null || echo 12345678999999)
   if [ ! -z "$PID" ]; then
     log_verbose "Monitoring PID: $PID"
     ALO_PID=$(pmap -d $PID | grep "writeable/private" | awk -F' ' '{print $4}' | egrep -o '[0-9.]+'  )
