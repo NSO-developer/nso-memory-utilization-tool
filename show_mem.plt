@@ -9,8 +9,8 @@ if (verbose == 1) {
 } else {
     stats 'data/mem.log' using 4 nooutput
 }
-print "Recommended CommitLimit: ",STATS_max
-print "Please add some buffer range based on the Recommended CommitLimit"
+#print "Recommended CommitLimit: ",STATS_max
+#print "Please add some buffer range based on the Recommended CommitLimit"
 
 if (verbose == 1) {
     print "Statistical Data for RSS"

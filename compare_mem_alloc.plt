@@ -30,8 +30,8 @@ if (verbose == 1) {
 } else {
     stats 'data/python3/mem_total.log' using 4 nooutput
 }
-print "Recommended CommitLimit: ",STATS_max
-print "Please add some buffer range based on the Recommended CommitLimit"
+print "RECOMMENDATION: Recommended CommitLimit: ",STATS_max
+print "RECOMMENDATION: Please add some buffer range based on the Recommended CommitLimit"
 
 set term png small size 800,600
 set output "graphs/compare/mem-graph-compare-allocate.png"

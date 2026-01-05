@@ -37,8 +37,6 @@ fi
 OUTPUT_DIR=$(dirname "$OUTPUT_FILE")
 mkdir -p "$OUTPUT_DIR"
 
-
-
  
 for (( i=$STARTI;i<=$DURATION;i++ ))
 do
@@ -71,12 +69,18 @@ do
   # Tick!
   if  [[ $TYPE -eq 1 ]]; then
     PID=$(pgrep -f "./logs/ncs-python-vm -i $SCRIPT_NAME -s") #
+    #possible multiprocessing mode
+    SUBPIDS=$(ps --forest -o pid -g $PID | sed 1,2d)
+    #echo "Subprocess PID detected: "$SUBPIDS for $PID
   elif  [[ $TYPE -eq 2 ]]; then
     PID=$(pgrep -f "\.smp.*-ncs true") #./logs/ncs-python-vm -i 
+    SUBPIDS=""
   elif  [[ $TYPE -eq 3 ]]; then
     PID=$(pgrep -f "com.tailf.ncs.NcsJVMLauncher") #./logs/ncs-python-vm -i 
+    SUBPIDS=""
   else
     PID=$(pgrep -f "$SCRIPT_NAME") #./logs/ncs-python-vm -i 
+    SUBPIDS=""
   fi
   
   #echo $PID" "$SCRIPT_NAME" "$PYTHON_SWITCH" "$OUTPUT_FILE
@@ -87,6 +91,17 @@ do
     log_verbose "Monitoring PID: $PID"
     ALO_PID=$(pmap -d $PID | grep "writeable/private" | awk -F' ' '{print $4}' | egrep -o '[0-9.]+'  )
     PHY=$(cat /proc/$PID/status 2>/dev/null | grep VmRSS | awk -F' ' '{print $2}')
+    if [ ! -z "$SUBPIDS" ]; then
+       for SUBPID in $SUBPIDS; do
+          log_verbose "Subprocess PID detected: $PID"
+          #echo "Subprocess PID detected: $PID. Current ALO_PID $ALO_PID Before Addition" 
+          ALO_SUBPID=$(pmap -d $SUBPID | grep "writeable/private" | awk -F' ' '{print $4}' | egrep -o '[0-9.]+'  )
+          PHY_SUBPID=$(cat /proc/$SUBPID/status 2>/dev/null | grep VmRSS | awk -F' ' '{print $2}')
+          ALO_PID=$(($ALO_PID+$ALO_SUBPID))
+          #echo "Subprocess PID detected: $PID. Current ALO_PID $ALO_PID After Addition"
+          PHY=$(($PHY+$PHY_SUBPID))
+       done
+    fi
     #echo $ALO_PID
 
     if [ ! -z "$ALO_PID" ] && [ ! -z "$PHY" ]; then
@@ -109,9 +124,15 @@ do
 
   ALO_PID=""
   PHY=""
+  BACKUP_PID=$PID
+  BACKUP_SUBPIDS=$SUBPIDS
   unset PID
-
-
+  unset SUBPIDS
  done
 
-log_verbose "Collection for PID $PID done"
+log_verbose "Collection for PID $BACKUP_PID done"
+if [ ! -z "$BACKUP_SUBPIDS" ]; then
+    sleep 1
+    echo "RECOMMENDATION: Python package - PID "$BACKUP_PID":"$SCRIPT_NAME" has multipocess callpoint-model enabled. Recommend to change to threading mode for better memory utilization."
+    ps --forest -o pid,cmd -g $BACKUP_PID
+fi

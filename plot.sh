@@ -186,19 +186,19 @@ echo "===================================== Collection for for all process done 
 echo "====================================== Ploting graph to all process ========================================================"
 echo "====================================== Ploting graph for ncs.smp process ========================================================"
 bash graphs.sh ncs.smp $VERBOSE
-echo -e "===================================== Ploting graph for ncs.smp process done  =================================================\n"
+echo -e "===================================== Ploting graph for ncs.smp process done  ================================================="
 echo "====================================== Ploting graph for NcsJVMLauncher process ========================================================"
 bash graphs.sh NcsJVMLauncher $VERBOSE
-echo "===================================== Ploting graph for NcsJVMLauncher process done  =================================================\n"
-echo "====================================== Ploting graph for python3 processes ========================================================\n"
+echo "===================================== Ploting graph for NcsJVMLauncher process done  ================================================="
+echo "====================================== Ploting graph for python3 processes ========================================================"
 if [ -d "data/python3" ]; then
   echo "Plotting combined graph for python3 processes"
   bash graphs.sh python3 $VERBOSE
 else
   echo "No python3 data directory found"
 fi
-echo "===================================== Ploting graph for python3 processes done  =================================================\n"
+echo "===================================== Ploting graph for python3 processes done  ================================================="
 echo "====================================== Ploting graph to compare between process ========================================================"
 bash graphs_compare.sh $VERBOSE
-echo -e "====================================== Ploting graph to compare between process done ========================================================\n"
+echo -e "====================================== Ploting graph to compare between process done ========================================================"
 echo "===================================== Ploting graph to all process done  ================================================="
