@@ -3,11 +3,23 @@
 VERBOSE=0
 DURATION=""
 
+
+log_info () {
+    timestamp=$(date)
+    echo $timestamp" [INFO] "$1 
+}
+
+
+log_error () {
+    timestamp=$(date)
+    echo $timestamp" [ERR] "$1 
+}
+
 create_combined_python_log() {
-  echo "Creating combined Python total log..."
+  log_info "Creating combined Python total log..."
 
   if ! ls data/python3/mem_*.log >/dev/null 2>&1; then
-    echo "No Python process logs found to combine"
+    log_info "No Python process logs found to combine"
     return
   fi
 
@@ -43,7 +55,7 @@ create_combined_python_log() {
   }
   ' | sort > data/python3/mem_total.log
 
-  echo "Combined Python total log created"
+  log_info "Combined Python total log created"
 }
 
 
@@ -51,8 +63,7 @@ plot_clenup() {
   pkill -f collect.sh
   rm -rf /tmp/signalback
   rm $1
-  echo ""
-  echo "Data Collection - OK!"
+  log_info "Data Collection - OK!"
 
   sleep 2
 
@@ -61,28 +72,28 @@ plot_clenup() {
     create_combined_python_log
   fi
 
-  echo "===================================== Collection for for all process done  ================================================="
+  log_info  "Collection for for all process done "
 
 
-  echo "====================================== Ploting graph to all process ========================================================"
-  echo "====================================== Ploting graph for ncs.smp process ========================================================"
+  log_info "Ploting graph to all process "
+  log_info "Ploting graph for ncs.smp process "
   bash graphs.sh ncs.smp $VERBOSE
-  echo -e "===================================== Ploting graph for ncs.smp process done  ================================================="
-  echo "====================================== Ploting graph for NcsJVMLauncher process ========================================================"
+  log_info "Ploting graph for ncs.smp process done  "
+  log_info "Ploting graph for NcsJVMLauncher process "
   bash graphs.sh NcsJVMLauncher $VERBOSE
-  echo "===================================== Ploting graph for NcsJVMLauncher process done  ================================================="
-  echo "====================================== Ploting graph for python3 processes ========================================================"
+  log_info "Ploting graph for NcsJVMLauncher process done"
+  log_info "Ploting graph for python3 processes "
   if [ -d "data/python3" ]; then
-    echo "Plotting combined graph for python3 processes"
+    log_info "Plotting combined graph for python3 processes"
     bash graphs.sh python3 $VERBOSE
   else
-    echo "No python3 data directory found"
+    log_info "No python3 data directory found"
   fi
-  echo "===================================== Ploting graph for python3 processes done  ================================================="
-  echo "====================================== Ploting graph to compare between process ========================================================"
+  log_info "Ploting graph for python3 processes done"
+  log_info "Ploting graph to compare between process "
   bash graphs_compare.sh $VERBOSE
-  echo -e "====================================== Ploting graph to compare between process done ========================================================"
-  echo "===================================== Ploting graph to all process done  ================================================="
+  log_info "Ploting graph to compare between process done "
+  log_info "Ploting graph to all process done"
   exit 1
 }
 
@@ -113,7 +124,7 @@ fi
 # Clean up old data
 rm -rf data/ncs.smp data/NcsJVMLauncher data/python3
 
-echo "====================================== Collection for for all process ====================================================="
+log_info "Collection for for all process"
 
 # Create a signal file to coordinate process startup
 SIGNAL_FILE="/tmp/nso_collect_start_signal_$$"
@@ -123,7 +134,7 @@ rm -rf /tmp/signalback
 mkdir "/tmp/signalback"
 
 # Find and collect for each process type
-echo "Starting collection processes..."
+log_info "Starting collection processes..."
 
 NS=1000000000
 counter=0
@@ -148,7 +159,7 @@ do
   if [ ! -z "$NCS_PID" ]; then
     COLLECT_PIDS=$(pgrep -f '.*collect.sh.*ncs.smp')
     if [ -z "$COLLECT_PIDS" ]; then
-      echo "New ncs.smp process PID $NCS_PID: ncs.smp. Start Collection"
+      log_info "New ncs.smp process PID $NCS_PID: ncs.smp. Start Collection"
       counter=$((counter+1))
       bash collect.sh ncs.smp "data/ncs.smp/mem_ncs.smp.log" $DURATION $VERBOSE "$SIGNAL_FILE" $i &
     fi
@@ -158,7 +169,7 @@ do
   if [ ! -z "$JVM_PID" ]; then
     COLLECT_PIDS=$(pgrep -f ".*collect.sh.*NcsJVMLauncher")
     if [ -z "$COLLECT_PIDS" ]; then
-      echo "New JVM process PID $JVM_PID: NcsJVMLauncher. Start Collection"
+      log_info "New JVM process PID $JVM_PID: NcsJVMLauncher. Start Collection"
       counter=$((counter+1))
       bash collect.sh NcsJVMLauncher "data/NcsJVMLauncher/mem_NcsJVMLauncher.log" $DURATION $VERBOSE "$SIGNAL_FILE" $i &
     fi
@@ -172,7 +183,7 @@ do
       COLLECT_PIDS=$(pgrep -f ".*collect.sh.* $SCRIPT_NAME ")
       if [ -z "$COLLECT_PIDS" ]; then
         if [ ! -z "$PYTHON_SCRIPT" ]; then
-          echo "New Python process PID $pid: $SCRIPT_NAME. Start Collection"
+          log_info "New Python process PID $pid: $SCRIPT_NAME. Start Collection"
           cp $CACHE_FILE "data/python3/mem_$SCRIPT_NAME.log"
           counter=$((counter+1))
           bash collect.sh "$SCRIPT_NAME" "data/python3/mem_$SCRIPT_NAME.log" $DURATION $VERBOSE "$SIGNAL_FILE" $i &

@@ -133,6 +133,7 @@ do
 log_verbose "Collection for PID $BACKUP_PID done"
 if [ ! -z "$BACKUP_SUBPIDS" ]; then
     sleep 1
-    echo "RECOMMENDATION: Python package - PID "$BACKUP_PID":"$SCRIPT_NAME" has multipocess callpoint-model enabled. Recommend to change to threading mode for better memory utilization."
+    echo -e "\n\nRECOMMENDATION: Python package - PID "$BACKUP_PID":"$SCRIPT_NAME" has multipocess callpoint-model enabled. Recommend to change to threading mode for better memory utilization."
     ps --forest -o pid,cmd -g $BACKUP_PID
+    echo -e ""
 fi

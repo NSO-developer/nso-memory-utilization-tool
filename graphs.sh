@@ -2,7 +2,10 @@
 
 VERBOSE=${2:-0}
 
-
+log_info () {
+    timestamp=$(date)
+    echo $timestamp" [INFO] "$1 
+}
 
 
 PY_CHECK=0
@@ -35,7 +38,7 @@ for filename in data/$1/*.log; do
   name=$(echo $name)
   rm -f data/mem.log
   if [ ! -z "${name}" ]; then
-    echo "generated graph for pid "$name
+    log_info "generated graph for pid $name"
     ln -s $PWD/data/$1/mem_$name.log $PWD/data/mem.log
     if [ $PY_CHECK -eq 1 ]; then
        gnuplot -e "verbose=$VERBOSE" show_mem_2.plt
@@ -50,7 +53,7 @@ done
 
 if [ $PY_CHECK -eq 1 ]; then
   name="total"
-  echo "generated graph for total "$name
+  log_info "generated sum graph for entire Python VMs"
   rm -f data/mem.log
   ln -s $PWD/data/$1/mem_$name.log $PWD/data/mem.log
   gnuplot -e "verbose=$VERBOSE" show_mem.plt
