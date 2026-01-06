@@ -8,3 +8,8 @@ mkdir graphs/compare
 
 gnuplot -e "verbose=$VERBOSE" compare_mem_alloc.plt
 gnuplot -e "verbose=$VERBOSE" compare_mem_rss.plt
+
+
+gnuplot -e "verbose=$VERBOSE" compare_mem_alloc_withoutLimit.plt
+gnuplot -e "verbose=$VERBOSE" compare_mem_rss.plt
+

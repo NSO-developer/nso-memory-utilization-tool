@@ -37,7 +37,8 @@ fi
 OUTPUT_DIR=$(dirname "$OUTPUT_FILE")
 mkdir -p "$OUTPUT_DIR"
 
- 
+MemTotal=$(cat /proc/meminfo | grep 'MemTotal' | awk -F' ' '{print $2}') 
+
 for (( i=$STARTI;i<=$DURATION;i++ ))
 do
   SIGNALBACK_FILE="/tmp/signalback/nso_collect_start_signalback_$$_$i"
@@ -84,9 +85,10 @@ do
   fi
   
   #echo $PID" "$SCRIPT_NAME" "$PYTHON_SWITCH" "$OUTPUT_FILE
+  # Collction
   ALO_TOTAL=$(cat /proc/meminfo | grep 'Committed_AS' | awk -F' ' '{print $2}')
   Limit=$(cat /proc/meminfo | grep 'CommitLimit' | awk -F' ' '{print $2}')
-  TIME=$(awk 'NR==2' $SIGNAL_FILE 2>/dev/null || echo 12345678999999)
+
   if [ ! -z "$PID" ]; then
     log_verbose "Monitoring PID: $PID"
     ALO_PID=$(pmap -d $PID | grep "writeable/private" | awk -F' ' '{print $4}' | egrep -o '[0-9.]+'  )
@@ -102,6 +104,8 @@ do
           PHY=$(($PHY+$PHY_SUBPID))
        done
     fi
+    TIME=$(awk 'NR==2' $SIGNAL_FILE 2>/dev/null || echo 12345678999999)
+
     #echo $ALO_PID
 
     if [ ! -z "$ALO_PID" ] && [ ! -z "$PHY" ]; then
