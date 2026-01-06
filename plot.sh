@@ -46,6 +46,49 @@ create_combined_python_log() {
   echo "Combined Python total log created"
 }
 
+
+plot_clenup() {
+  pkill -f collect.sh
+  rm -rf /tmp/signalback
+  rm $1
+  echo ""
+  echo "Data Collection - OK!"
+
+  sleep 2
+
+
+  if [ ! -z "$2" ]; then
+    create_combined_python_log
+  fi
+
+  echo "===================================== Collection for for all process done  ================================================="
+
+
+  echo "====================================== Ploting graph to all process ========================================================"
+  echo "====================================== Ploting graph for ncs.smp process ========================================================"
+  bash graphs.sh ncs.smp $VERBOSE
+  echo -e "===================================== Ploting graph for ncs.smp process done  ================================================="
+  echo "====================================== Ploting graph for NcsJVMLauncher process ========================================================"
+  bash graphs.sh NcsJVMLauncher $VERBOSE
+  echo "===================================== Ploting graph for NcsJVMLauncher process done  ================================================="
+  echo "====================================== Ploting graph for python3 processes ========================================================"
+  if [ -d "data/python3" ]; then
+    echo "Plotting combined graph for python3 processes"
+    bash graphs.sh python3 $VERBOSE
+  else
+    echo "No python3 data directory found"
+  fi
+  echo "===================================== Ploting graph for python3 processes done  ================================================="
+  echo "====================================== Ploting graph to compare between process ========================================================"
+  bash graphs_compare.sh $VERBOSE
+  echo -e "====================================== Ploting graph to compare between process done ========================================================"
+  echo "===================================== Ploting graph to all process done  ================================================="
+  exit 1
+}
+
+
+
+
 # Parse arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -89,12 +132,17 @@ CACHE_FILE="/tmp/cache.log"
 touch $CACHE_FILE
 
 mkdir -p data/python3
+
+trap "rm -rf $CACHE_FILE; rm -rf /tmp/signalback ; exit 1 " SIGINT
+
 for (( i=0;i<=$DURATION;i++ ))
 do
   START_TIME=$(date +%s%N)
   PYTHON_PIDS=$(pgrep -f "python.* .*startup\.py")
   JVM_PID=$(pgrep -f com.tailf.ncs.NcsJVMLauncher)
   NCS_PID=$(pgrep -f "\.smp.*-ncs true")
+
+  trap "plot_clenup $CACHE_FILE $PYTHON_PIDS" SIGINT
 
   # Collect ncs.smp or beam.smp NSO process
   if [ ! -z "$NCS_PID" ]; then
@@ -166,39 +214,9 @@ done
 
 wait
 
-
-pkill -f collect.sh
-rm -rf /tmp/signalback
-rm $CACHE_FILE
-echo ""
-echo "Data Collection - OK!"
-
-sleep 2
+plot_clenup $CACHE_FILE $PYTHON_PIDS
 
 
-if [ ! -z "$PYTHON_PIDS" ]; then
-  create_combined_python_log
-fi
-
-echo "===================================== Collection for for all process done  ================================================="
 
 
-echo "====================================== Ploting graph to all process ========================================================"
-echo "====================================== Ploting graph for ncs.smp process ========================================================"
-bash graphs.sh ncs.smp $VERBOSE
-echo -e "===================================== Ploting graph for ncs.smp process done  ================================================="
-echo "====================================== Ploting graph for NcsJVMLauncher process ========================================================"
-bash graphs.sh NcsJVMLauncher $VERBOSE
-echo "===================================== Ploting graph for NcsJVMLauncher process done  ================================================="
-echo "====================================== Ploting graph for python3 processes ========================================================"
-if [ -d "data/python3" ]; then
-  echo "Plotting combined graph for python3 processes"
-  bash graphs.sh python3 $VERBOSE
-else
-  echo "No python3 data directory found"
-fi
-echo "===================================== Ploting graph for python3 processes done  ================================================="
-echo "====================================== Ploting graph to compare between process ========================================================"
-bash graphs_compare.sh $VERBOSE
-echo -e "====================================== Ploting graph to compare between process done ========================================================"
-echo "===================================== Ploting graph to all process done  ================================================="
+
