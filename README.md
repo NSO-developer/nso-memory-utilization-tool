@@ -43,6 +43,12 @@ vm.overcommit_ratio can be calculated with the following formular
 After data collection, the code will list the maximum Commited_AS + Buffer and recommend that as CommitLimit
 
 ```
+Recommended CommitLimit: 15929672.0
+Please add some buffer range based on the Recommended CommitLimit
+```
+
+In verbose mode one can also see the detail statistics
+```
 * COLUMN: 
   Mean:          1.59283e+07
   Std Dev:          926.0038
@@ -63,9 +69,6 @@ After data collection, the code will list the maximum Commited_AS + Buffer and r
   Quartile:      1.59275e+07 
   Median:        1.59281e+07 
   Quartile:      1.59292e+07 
-
-Recommended CommitLimit: 15929672.0
-Please add some buffer range based on the Recommended CommitLimit
 ```
 
 ## Example Usage
