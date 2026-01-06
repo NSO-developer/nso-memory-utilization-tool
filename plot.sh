@@ -169,7 +169,7 @@ do
     for pid in $PYTHON_PIDS; do
       PYTHON_SCRIPT=$(ps -p $pid -o command | tail -n 1 | awk -F' ' '{print $9}')
       SCRIPT_NAME=$(basename "$PYTHON_SCRIPT" .py 2>/dev/null || echo "python_$pid")
-      COLLECT_PIDS=$(pgrep -f ".*collect.sh.* $SCRIPT_NAME")
+      COLLECT_PIDS=$(pgrep -f ".*collect.sh.* $SCRIPT_NAME ")
       if [ -z "$COLLECT_PIDS" ]; then
         if [ ! -z "$PYTHON_SCRIPT" ]; then
           echo "New Python process PID $pid: $SCRIPT_NAME. Start Collection"
