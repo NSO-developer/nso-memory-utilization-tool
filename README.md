@@ -21,6 +21,8 @@ sh plot.sh [--verbose|-v] <Time Duration>
 * The Physical Memory Used is from "VmRSS" in "/proc/$pid/status"
 * "CommitLimit" from "/proc/meminfo" as memory allocation limit. 
 * "Committed_AS" from "/proc/meminfo" for global allocated memory across the system. 
+* "MemTotal" from "/proc/meminfo" as total amount of physical memory. 
+* "MemFree" from "/proc/meminfo" for global physcal memory not used across the system. 
 
 
 ## Diagram Generated

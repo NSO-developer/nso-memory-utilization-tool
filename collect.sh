@@ -12,6 +12,8 @@ SIGNAL_FILE=$5
 STARTI=$6
 CACHE_FILE="/tmp/cache.log"
 
+
+
 if [ -z "$PID" ] || [ -z "$OUTPUT_FILE" ] || [ -z "$DURATION" ]; then
   echo "Usage: $0 <pid> <output_file> <duration> [verbose_flag] [signal_file]"
   exit 1
@@ -21,6 +23,11 @@ log_verbose() {
   if [ $VERBOSE -eq 1 ]; then
     echo "$1"
   fi
+}
+
+log_error () {
+    timestamp=$(date)
+    echo $timestamp" [ERR] "$1 
 }
 
 if [[ $OUTPUT_FILE == *"python3"* ]]; then
@@ -63,7 +70,7 @@ do
     done
 
   else 
-      echo "SIGNAL_FILE Parameter not provided"
+      log_error "SIGNAL_FILE Parameter not provided"
   fi
 
   #rm -f $SIGNALBACK_FILE
@@ -85,10 +92,17 @@ do
   fi
   
   #echo $PID" "$SCRIPT_NAME" "$PYTHON_SWITCH" "$OUTPUT_FILE
-  # Collction
+  # Collection
+  # General System Status
+  # Allocated
   ALO_TOTAL=$(cat /proc/meminfo | grep 'Committed_AS' | awk -F' ' '{print $2}')
   Limit=$(cat /proc/meminfo | grep 'CommitLimit' | awk -F' ' '{print $2}')
+  # Physical
+  MemFree=$(cat /proc/meminfo | grep 'MemFree' | awk -F' ' '{print $2}')
+  MemTotal=$(cat /proc/meminfo | grep 'MemTotal' | awk -F' ' '{print $2}')
+  MemUsed=$(($MemTotal-$MemFree))
 
+  # Per Process
   if [ ! -z "$PID" ]; then
     log_verbose "Monitoring PID: $PID"
     ALO_PID=$(pmap -d $PID | grep "writeable/private" | awk -F' ' '{print $4}' | egrep -o '[0-9.]+'  )
@@ -105,23 +119,27 @@ do
        done
     fi
     TIME=$(awk 'NR==2' $SIGNAL_FILE 2>/dev/null || echo 12345678999999)
+    
+    # Monitor
+    # Committed_AS vs CommitLimit
+    # MemFree vs MemTotal
 
     #echo $ALO_PID
 
     if [ ! -z "$ALO_PID" ] && [ ! -z "$PHY" ]; then
-      echo $TIME" "$PHY" "$ALO_PID" "$ALO_TOTAL" "$Limit $PID >> "$OUTPUT_FILE"
+      echo $TIME" "$PHY" "$ALO_PID" "$ALO_TOTAL" "$Limit" "$MemUsed" "$MemTotal $PID >> "$OUTPUT_FILE"
       if  [[ $TYPE -eq 2 ]]; then
-          echo $TIME" "0" "0" "$ALO_TOTAL" "$Limit >> "$CACHE_FILE"
+          echo $TIME" "0" "0" "$ALO_TOTAL" "$Limit" "$MemUsed" "$MemTotal >> "$CACHE_FILE"
       fi
       log_verbose "$i second is collected to $OUTPUT_FILE"
     else
       #echo "empty 1"
-      echo $TIME" "0" "0" "$ALO_TOTAL" "$Limit >> "$OUTPUT_FILE"
+      echo $TIME" "0" "0" "$ALO_TOTAL" "$Limit" "$MemUsed" "$MemTotal >> "$OUTPUT_FILE"
       log_verbose "$i second is collected to $OUTPUT_FILE"
     fi
   else
     #echo "empty 2"
-    echo $TIME" "0" "0" "$ALO_TOTAL" "$Limit >> "$OUTPUT_FILE"
+    echo $TIME" "0" "0" "$ALO_TOTAL" "$Limit" "$MemUsed" "$MemTotal >> "$OUTPUT_FILE"
     log_verbose "$i second is collected to $OUTPUT_FILE"
   fi
   touch $SIGNALBACK_FILE

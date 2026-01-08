@@ -11,5 +11,5 @@ gnuplot -e "verbose=$VERBOSE" compare_mem_rss.plt
 
 
 gnuplot -e "verbose=$VERBOSE" compare_mem_alloc_withoutLimit.plt
-gnuplot -e "verbose=$VERBOSE" compare_mem_rss.plt
+gnuplot -e "verbose=$VERBOSE" compare_mem_rss_withoutLimit.plt
 

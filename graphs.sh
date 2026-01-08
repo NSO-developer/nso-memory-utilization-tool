@@ -27,38 +27,42 @@ rm -rf graphs/$1
 rm -f *.png
 mkdir graphs/$1
 
+if [ -d "$PWD/data/$1" ]; then
+   for filename in data/$1/*.log; do
+   if [ $PY_CHECK -eq 1 ]; then
+      name=$(echo $filename | awk -F'/' '{print $NF}' | awk -F'mem_|.log' '{print $2}')
+   else
+      name=$1
+   fi
+   name=$(echo $name)
+   rm -f data/mem.log
 
 
-for filename in data/$1/*.log; do
-  if [ $PY_CHECK -eq 1 ]; then
-     name=$(echo $filename | awk -F'/' '{print $NF}' | awk -F'mem_|.log' '{print $2}')
-  else
-    name=$1
-  fi
-  name=$(echo $name)
-  rm -f data/mem.log
-  if [ ! -z "${name}" ]; then
-    log_info "generated graph for pid $name"
-    ln -s $PWD/data/$1/mem_$name.log $PWD/data/mem.log
-    if [ $PY_CHECK -eq 1 ]; then
-       gnuplot -e "verbose=$VERBOSE" show_mem_2.plt
-    else
-       gnuplot -e "verbose=$VERBOSE" show_mem.plt
-    fi
+   if [ ! -z "${name}" ]; then
+      log_info "Generated graph for pid $name"
+      ln -s $PWD/data/$1/mem_$name.log $PWD/data/mem.log
+      if [ $PY_CHECK -eq 1 ]; then
+         gnuplot -e "verbose=$VERBOSE" show_mem_2.plt
+      else
+         gnuplot -e "verbose=$VERBOSE" show_mem.plt
+      fi
 
-    cp mem-graph.png graphs/$1/mem_$name.png
-  fi
-done
+      cp mem-graph.png graphs/$1/mem_$name.png
+   fi
+   done
 
 
-if [ $PY_CHECK -eq 1 ]; then
-  name="total"
-  log_info "generated sum graph for entire Python VMs"
-  rm -f data/mem.log
-  ln -s $PWD/data/$1/mem_$name.log $PWD/data/mem.log
-  gnuplot -e "verbose=$VERBOSE" show_mem.plt
-  cp mem-graph.png graphs/$1/mem_$name.png
+   if [ $PY_CHECK -eq 1 ]; then
+   name="total"
+   log_info "Generated sum graph for entire Python VMs"
+   rm -f data/mem.log
+   ln -s $PWD/data/$1/mem_$name.log $PWD/data/mem.log
+   gnuplot -e "verbose=$VERBOSE" show_mem.plt
+   cp mem-graph.png graphs/$1/mem_$name.png
+   fi
+
+   rm -f graphs/mem_.png
+   rm -f graphs/mem_--multiprocessing-fork.png
+else
+   log_info "$1 data not collected. Ignore...."
 fi
-
-rm -f graphs/mem_.png
-rm -f graphs/mem_--multiprocessing-fork.png

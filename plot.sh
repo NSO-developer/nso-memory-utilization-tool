@@ -32,11 +32,16 @@ create_combined_python_log() {
     alloc = $3
     system_total = $4
     limit = $5
+    mem_used = $6
+    mem_total = $7
 
     totals[timestamp,"rss"] += rss
     totals[timestamp,"alloc"] += alloc
     totals[timestamp,"system"] = system_total
     totals[timestamp,"limit"] = limit
+    totals[timestamp,"used"] = mem_used
+    totals[timestamp,"memtotal"] = mem_total
+
 
     count[timestamp]++
 
@@ -49,7 +54,7 @@ create_combined_python_log() {
     for (i = 1; i <= ts_count; i++) {
       ts = timestamps[i]
       if (count[ts] == num_files) {
-        print ts, totals[ts,"rss"], totals[ts,"alloc"], totals[ts,"system"], totals[ts,"limit"]
+        print ts, totals[ts,"rss"], totals[ts,"alloc"], totals[ts,"system"], totals[ts,"limit"], totals[ts,"used"], totals[ts,"memtotal"]
       }
     }
   }
