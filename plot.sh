@@ -1,6 +1,7 @@
 #!/bin/bash
 
 VERBOSE=0
+MONITOR=0
 DURATION=""
 
 
@@ -112,17 +113,45 @@ while [[ $# -gt 0 ]]; do
       VERBOSE=1
       shift
       ;;
+    -m|--monitor) 
+      MONITOR=1
+      shift
+      ;;  
     *)
       DURATION="$1"
       shift
       ;;
   esac
+
 done
 
+while [[ $# -gt 1 ]]; do
+  case $2 in
+    -v|--verbose)
+      VERBOSE=1
+      DURATION="$3"
+      shift
+      ;;
+    -m|--monitor) 
+      MONITOR=1
+      DURATION="$3"
+      shift
+      ;;  
+    *)
+      DURATION="$2"
+      shift
+      ;;
+  esac
+
+done
+
+
+
 if [ -z "$DURATION" ]; then
-  echo "Usage: $0 [--verbose|-v] <duration>"
+  echo "Usage: $0 [--verbose|-v] [--monitor|-m] <duration>"
   echo "  duration: Collection duration in seconds"
   echo "  --verbose: Enable verbose logging"
+  echo "  --monitor: Enable monitoring when memory reach warning level"
   exit 1
 fi
 
@@ -196,7 +225,18 @@ do
       fi
     done
   fi
- 
+
+  if [  "$MONITOR" -eq 1 ]; then
+    # Monitoring thread
+    if [ ! -z "$NCS_PID" ]; then
+      MONITOR_PIDS=$(pgrep -f '.*monitor.sh.*')
+      if [ -z "$MONITOR_PIDS" ]; then
+        log_info "Start Monitoring"
+        counter=$((counter+1))
+        bash monitor.sh $DURATION $VERBOSE "$SIGNAL_FILE" $i &
+      fi
+    fi
+  fi
 
   
   sleep 0.1

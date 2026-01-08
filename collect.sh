@@ -13,21 +13,26 @@ STARTI=$6
 CACHE_FILE="/tmp/cache.log"
 
 
-
 if [ -z "$PID" ] || [ -z "$OUTPUT_FILE" ] || [ -z "$DURATION" ]; then
   echo "Usage: $0 <pid> <output_file> <duration> [verbose_flag] [signal_file]"
   exit 1
 fi
 
 log_verbose() {
+  timestamp=$(date)
   if [ $VERBOSE -eq 1 ]; then
-    echo "$1"
+    echo $timestamp" [VERBOSE] "$1
   fi
 }
 
 log_error () {
     timestamp=$(date)
     echo $timestamp" [ERR] "$1 
+}
+
+log_monitor () {
+    timestamp=$(date)
+    echo $timestamp" [MONITOR] "$1 
 }
 
 if [[ $OUTPUT_FILE == *"python3"* ]]; then
@@ -119,10 +124,6 @@ do
        done
     fi
     TIME=$(awk 'NR==2' $SIGNAL_FILE 2>/dev/null || echo 12345678999999)
-    
-    # Monitor
-    # Committed_AS vs CommitLimit
-    # MemFree vs MemTotal
 
     #echo $ALO_PID
 

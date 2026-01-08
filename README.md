@@ -12,8 +12,12 @@ apt-get install gnuplot
 ## Usage
 Start measurment and input measurment time period. The diagram will generated afterwards in the graphs folder per process after the data collection
 ```
-sh plot.sh [--verbose|-v] <Time Duration>
+plot.sh [--verbose|-v] [--monitor|-m] <duration>
+  duration: Collection duration in seconds
+  --verbose: Enable verbose logging
+  --monitor: Enable monitoring when memory reach warning level
 ```
+Montioring mode aimed to report memory critical situation when the allocated or used memory are exceed 90 percent of the CommitLimit/MemTotal during the time of the data collection. This feature is aimed for integration to NSO as active responder before critical situation happend. Normal data collection do not require this feature. 
 
 
 ## Data Collection Source
@@ -34,8 +38,10 @@ All the diagram generated have a red warning line to indicate where is the Commi
         * per VM (Without CommitLimit Warning Line to increase visiblity)
         * Total for all the VMs
 * Comparision between ncs.smp, JavaVM and PythonVM
+    * Allocated Memory per Process
     * Allocated Memory per Process vs Total Allocated Memory(Commited_AS) 
-    * Total Allocated Memory(Commited_AS) vs Physical Memory Usage(RSS)
+    * Physical Memory Usage(RSS) per process
+    * Total Physical Memory(MemUsed)/Allocaed Memory(Commited_AS) vs Physical Memory Usage(RSS) per Process
 
 ## Recommended CommitLimit
 vm.overcommit_ratio can be calculated with the following formular

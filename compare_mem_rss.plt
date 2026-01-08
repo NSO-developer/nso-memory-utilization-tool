@@ -61,6 +61,7 @@ show style line
 
 plot "data/ncs.smp/mem_ncs.smp.log" using 1:7 with lines axes x1y1 lc 'red' lw 2 title "MemTotal", \
      "data/ncs.smp/mem_ncs.smp.log" using 1:6 with lines axes x1y1 title "MemUsed", \
+     "data/ncs.smp/mem_ncs.smp.log" using 1:4 with lines axes x1y1 title "Commited_AS", \
     "data/ncs.smp/mem_ncs.smp.log" using 1:2 with lines axes x1y1 title "ncs.smp", \
     "data/python3/mem_total.log" using 1:2 with lines axes x1y1 title "PythonVM(Total)", \
     "data/NcsJVMLauncher/mem_NcsJVMLauncher.log" using 1:2 with lines axes x1y1 title "JavaVM"
