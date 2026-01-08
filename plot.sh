@@ -67,6 +67,7 @@ create_combined_python_log() {
 
 plot_clenup() {
   pkill -f collect.sh
+  pkill -f monitor.sh
   rm -rf /tmp/signalback
   rm $1
   log_info "Data Collection - OK!"
