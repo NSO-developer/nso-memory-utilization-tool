@@ -181,6 +181,8 @@ touch $CACHE_FILE
 mkdir -p data/python3
 
 trap "rm -rf $CACHE_FILE; rm -rf /tmp/signalback ; exit 1 " SIGINT
+trap "rm -rf $CACHE_FILE; rm -rf /tmp/signalback ; exit 1 " TERM
+
 
 if [[  "$DURATION" == "NaN" ]]; then
   DURATION=9223372036854775807
@@ -196,6 +198,8 @@ do
   NCS_PID=$(pgrep -f "\.smp.*-ncs true")
 
   trap "plot_clenup $CACHE_FILE $PYTHON_PIDS" SIGINT
+  trap "plot_clenup $CACHE_FILE $PYTHON_PIDS" TERM
+
 
   # Collect ncs.smp or beam.smp NSO process
   if [ ! -z "$NCS_PID" ]; then

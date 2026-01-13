@@ -13,9 +13,9 @@ STARTI=$4
 CACHE_FILE="/tmp/cache.log"
 
 ALLOC_LIMIT_PERCENT=90
-RSS_LIMIT_PERCENT=90
+RSS_LIMIT_PERCENT=90 #20 for testing 
 ALLOC_LIMIT_CRIT_PERCENT=95
-RSS_LIMIT_CRIT_PERCENT=95
+RSS_LIMIT_CRIT_PERCENT=95 # 24 for testing
 
 if  [ -z "$DURATION" ]; then
   echo "Usage: $0 <duration> [verbose_flag] [signal_file]"
