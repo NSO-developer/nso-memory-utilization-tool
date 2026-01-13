@@ -19,10 +19,16 @@ plot.sh [--verbose|-v] [--monitor|-m] <duration>
 ```
 When <duration> is NaN, the tool will start collecting data infinitly and waiting for user to terminate the collection via CTRL+C. By the time the collection stop, the graph will be generated. 
 Montioring mode aimed to report memory critical situation. The error will be showing in 2 scenario during the time of the data collection
- * Warning - when the allocated or used memory are exceed 90 percent of the CommitLimit/MemTotal. 
- * Critical - when the allocated or used memory are exceed 95 percent of the CommitLimit/MemTotal. 
-In monitoring mode, the <duration> is NaN which means inifinity. 
-This feature is aimed for integration to NSO as active responder before critical situation happend. Normal data collection do not require this feature. 
+ * Warning[WARNING] - when the allocated or used memory are exceed 90 percent of the CommitLimit/MemTotal. 
+ * Critical[CRIT] - when the allocated or used memory are exceed 95 percent of the CommitLimit/MemTotal.  
+
+In monitoring mode, the <duration> is NaN which means inifinity.  
+This feature is aimed for integration to NSO as active responder before critical situation happend. Normal data collection do not require this feature.  
+
+Sample Log for Monitoring can be found as below
+```
+Tue Jan 13 13:35:58 CET 2026 [MONITOR] [CRIT] Physical Memory Usage 14078960 KB/55521920 KB(25%) exceeded 24% of MemTotal
+```
 
 
 ## Data Collection Source
