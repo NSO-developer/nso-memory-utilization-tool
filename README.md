@@ -17,7 +17,12 @@ plot.sh [--verbose|-v] [--monitor|-m] <duration>
   --verbose: Enable verbose logging
   --monitor: Enable monitoring when memory reach warning level
 ```
-Montioring mode aimed to report memory critical situation when the allocated or used memory are exceed 90 percent of the CommitLimit/MemTotal during the time of the data collection. This feature is aimed for integration to NSO as active responder before critical situation happend. Normal data collection do not require this feature. 
+When <duration> is NaN, the tool will start collecting data infinitly and waiting for user to terminate the collection via CTRL+C. By the time the collection stop, the graph will be generated. 
+Montioring mode aimed to report memory critical situation. The error will be showing in 2 scenario during the time of the data collection
+ * Warning - when the allocated or used memory are exceed 90 percent of the CommitLimit/MemTotal. 
+ * Critical - when the allocated or used memory are exceed 95 percent of the CommitLimit/MemTotal. 
+In monitoring mode, the <duration> is NaN which means inifinity. 
+This feature is aimed for integration to NSO as active responder before critical situation happend. Normal data collection do not require this feature. 
 
 
 ## Data Collection Source
