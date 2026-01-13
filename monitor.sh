@@ -14,6 +14,8 @@ CACHE_FILE="/tmp/cache.log"
 
 ALLOC_LIMIT_PERCENT=90
 RSS_LIMIT_PERCENT=90
+ALLOC_LIMIT_CRIT_PERCENT=95
+RSS_LIMIT_CRIT_PERCENT=95
 
 if  [ -z "$DURATION" ]; then
   echo "Usage: $0 <duration> [verbose_flag] [signal_file]"
@@ -106,17 +108,26 @@ do
     # MemFree vs MemTotal
     ALO_LIMIT=$(( $Limit*$ALLOC_LIMIT_PERCENT/100 ))
     RSS_LIMIT=$(( $MemTotal*$RSS_LIMIT_PERCENT/100 ))
+    ALO_CRIT_LIMIT=$(( $Limit*$ALLOC_LIMIT_CRIT_PERCENT/100 ))
+    RSS_CRIT_LIMIT=$(( $MemTotal*$RSS_LIMIT_CRIT_PERCENT/100 ))
+
+    ALO_USAGE_PERCENT=$(( $ALO_TOTAL*100/$Limit ))
+    RSS_USAGE_PERCENT=$(( $MemUsed*100/$MemTotal ))
 
     if [ $ALO_TOTAL -lt $ALO_LIMIT ]; then
-        log_monitor_verbose "[INFO] Committed_AS $ALO_TOTAL KB/$ALO_LIMIT KB is within $ALLOC_LIMIT_PERCENT% of CommitLimit"
-      else
-        log_monitor "[WARNING] Committed_AS $ALO_TOTAL KB/$ALO_LIMIT KB exceeded $ALLOC_LIMIT_PERCENT% of CommitLimit"
+        log_monitor_verbose "[INFO] Committed_AS $ALO_TOTAL KB/$Limit KB($ALO_USAGE_PERCENT%) is within $ALLOC_LIMIT_PERCENT% of CommitLimit"
+    elif [ $ALO_TOTAL -lt $ALO_CRIT_LIMIT ] && [ $ALO_TOTAL -gt $ALO_LIMIT ]; then
+        log_monitor "[WARNING] Committed_AS $ALO_TOTAL KB/$Limit KB($ALO_USAGE_PERCENT%) exceeded $ALLOC_LIMIT_PERCENT% of CommitLimit"
+    else
+        log_monitor "[CRIT] Committed_AS $ALO_TOTAL KB/$Limit KB($ALO_USAGE_PERCENT%) exceeded $ALLOC_LIMIT_CRIT_PERCENT% of CommitLimit"
     fi
 
     if [ $MemUsed -lt $RSS_LIMIT ]; then
-        log_monitor_verbose "[INFO] Physical Memory Usage $MemUsed KB/$RSS_LIMIT KB is within $RSS_LIMIT_PERCENT% of MemTotal"
-      else
-        log_monitor "[WARNING] Physical Memory Usage $MemUsed KB/$RSS_LIMIT KB exceeded $RSS_LIMIT_PERCENT% of MemTotal"
+        log_monitor_verbose "[INFO] Physical Memory Usage $MemUsed KB/$MemTotal KB($RSS_USAGE_PERCENT%) is within $RSS_LIMIT_PERCENT% of MemTotal"
+    elif [ $MemUsed -lt $RSS_CRIT_LIMIT ] && [ $MemUsed -gt $RSS_LIMIT ]; then
+        log_monitor "[WARNING] Physical Memory Usage $MemUsed KB/$MemTotal KB($RSS_USAGE_PERCENT%) exceeded $RSS_LIMIT_PERCENT% of MemTotal"
+    else
+        log_monitor "[CRIT] Physical Memory Usage $MemUsed KB/$MemTotal KB($RSS_USAGE_PERCENT%) exceeded $RSS_LIMIT_CRIT_PERCENT% of MemTotal"   
     fi
 
   # fi

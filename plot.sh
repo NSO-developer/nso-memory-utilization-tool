@@ -116,6 +116,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     -m|--monitor) 
       MONITOR=1
+      DURATION="NaN"
       shift
       ;;  
     *)
@@ -180,6 +181,12 @@ touch $CACHE_FILE
 mkdir -p data/python3
 
 trap "rm -rf $CACHE_FILE; rm -rf /tmp/signalback ; exit 1 " SIGINT
+
+if [[  "$DURATION" == "NaN" ]]; then
+  DURATION=9223372036854775807
+fi
+
+
 
 for (( i=0;i<=$DURATION;i++ ))
 do
@@ -263,8 +270,14 @@ do
     #echo $SLEEP_SECONDS
     sleep $SLEEP_SECONDS
   fi
+  if [[  $DURATION == 9223372036854775807 ]]; then
+    echo -ne "Data Collection - Infinity Collection. Ctrl+C to exit and process the data."\\r
+  else
+    echo -ne "Data Collection - $i second out of $DURATION second"\\r
+  fi
 
-  echo -ne "Data Collection - $i second out of $DURATION second"\\r
+
+
 
 done
 
