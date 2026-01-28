@@ -106,6 +106,8 @@ do
   MemFree=$(cat /proc/meminfo | grep 'MemFree' | awk -F' ' '{print $2}')
   MemTotal=$(cat /proc/meminfo | grep 'MemTotal' | awk -F' ' '{print $2}')
   MemUsed=$(($MemTotal-$MemFree))
+  TIME=$(awk 'NR==2' $SIGNAL_FILE 2>/dev/null || echo 12345678999999)
+
 
   # Per Process
   if [ ! -z "$PID" ]; then
@@ -123,7 +125,6 @@ do
           PHY=$(($PHY+$PHY_SUBPID))
        done
     fi
-    TIME=$(awk 'NR==2' $SIGNAL_FILE 2>/dev/null || echo 12345678999999)
 
     #echo $ALO_PID
 
