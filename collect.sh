@@ -81,7 +81,7 @@ do
   #rm -f $SIGNALBACK_FILE
   # Tick!
   if  [[ $TYPE -eq 1 ]]; then
-    PID=$(pgrep -f "./logs/ncs-python-vm -i $SCRIPT_NAME -s") #
+    PID=$(pgrep -f "./logs/ncs-python-vm -i $SCRIPT_NAME -s" | sed 2d) #
     #possible multiprocessing mode
     SUBPIDS=$(ps --forest -o pid -g $PID | sed 1,2d)
     #echo "Subprocess PID detected: "$SUBPIDS for $PID
@@ -116,11 +116,13 @@ do
     PHY=$(cat /proc/$PID/status 2>/dev/null | grep VmRSS | awk -F' ' '{print $2}')
     if [ ! -z "$SUBPIDS" ]; then
        for SUBPID in $SUBPIDS; do
-          log_verbose "Subprocess PID detected: $PID"
-          #echo "Subprocess PID detected: $PID. Current ALO_PID $ALO_PID Before Addition" 
+          #log_verbose "Subprocess PID detected: $PID"
+          log_verbose "Subprocess PID detected: $PID. Current ALO_PID $ALO_PID Before Addition" 
           ALO_SUBPID=$(pmap -d $SUBPID | grep "writeable/private" | awk -F' ' '{print $4}' | egrep -o '[0-9.]+'  )
+          #echo $ALO_PID
+          #echo $ALO_SUBPID
           PHY_SUBPID=$(cat /proc/$SUBPID/status 2>/dev/null | grep VmRSS | awk -F' ' '{print $2}')
-          ALO_PID=$(($ALO_PID+$ALO_SUBPID))
+          ALO_PID=$(($ALO_PID + $ALO_SUBPID))
           #echo "Subprocess PID detected: $PID. Current ALO_PID $ALO_PID After Addition"
           PHY=$(($PHY+$PHY_SUBPID))
        done
